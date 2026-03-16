@@ -1,0 +1,1311 @@
+import { useState, useEffect, useRef } from "react";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import {
+  adminService,
+  examService,
+  productService,
+  blogService,
+  teamService,
+  galleryService,
+  orderService,
+  cmsService,
+  heroService,
+  partnerService,
+} from "../services/api";
+
+// ─── Admin Login ──────────────────────────────────────────────────
+export function AdminLoginPage() {
+  const { login, isAuthenticated } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  if (isAuthenticated) return <Navigate to="/admin" replace />;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    try {
+      await login(email, password);
+    } catch {
+      setError("Invalid email or password.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <main className="min-h-screen bg-gray-950 flex items-center justify-center px-6">
+      <div className="w-full max-w-sm">
+        <div className="text-center mb-8">
+          <div className="w-12 h-12 bg-crimson-800 flex items-center justify-center mx-auto mb-5">
+            <svg
+              viewBox="0 0 40 40"
+              className="w-7 h-7"
+              fill="none"
+              stroke="white"
+              strokeWidth="2"
+              strokeLinecap="round"
+            >
+              <circle cx="20" cy="20" r="5" />
+              <line x1="20" y1="4" x2="20" y2="9" />
+              <line x1="20" y1="31" x2="20" y2="36" />
+              <line x1="4" y1="20" x2="9" y2="20" />
+              <line x1="31" y1="20" x2="36" y2="20" />
+            </svg>
+          </div>
+          <h1 className="font-display text-2xl font-black text-white tracking-tight">
+            ESA-MU Admin
+          </h1>
+          <p className="font-mono text-xs text-gray-600 mt-2 uppercase tracking-widest">
+            Sign in to manage the platform
+          </p>
+        </div>
+
+        <form
+          onSubmit={handleSubmit}
+          className="bg-gray-900 border border-gray-800 p-7 space-y-4"
+        >
+          {error && (
+            <div className="bg-crimson-950 border border-crimson-900 p-3">
+              <p className="font-mono text-[10px] text-crimson-400 uppercase tracking-wider">
+                {error}
+              </p>
+            </div>
+          )}
+          <div>
+            <label className="block font-mono text-[9px] uppercase tracking-widest text-gray-500 mb-2">
+              Email
+            </label>
+            <input
+              type="email"
+              className="w-full bg-gray-800 border border-gray-700 text-white px-4 py-3 text-sm focus:outline-none focus:border-crimson-600 transition-colors placeholder:text-gray-700"
+              placeholder="admin@esamu.ke"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label className="block font-mono text-[9px] uppercase tracking-widest text-gray-500 mb-2">
+              Password
+            </label>
+            <input
+              type="password"
+              className="w-full bg-gray-800 border border-gray-700 text-white px-4 py-3 text-sm focus:outline-none focus:border-crimson-600 transition-colors placeholder:text-gray-700"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-crimson-800 text-white py-3.5 font-mono text-xs uppercase tracking-wider hover:bg-crimson-700 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+          >
+            {loading ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Signing in...
+              </>
+            ) : (
+              "Sign In →"
+            )}
+          </button>
+        </form>
+      </div>
+    </main>
+  );
+}
+
+// ─── Shared UI ────────────────────────────────────────────────────
+function Th({ children }: { children: React.ReactNode }) {
+  return (
+    <th className="px-4 py-3 text-left font-mono text-[9px] uppercase tracking-widest text-gray-400 border-b border-gray-100">
+      {children}
+    </th>
+  );
+}
+function Td({
+  children,
+  mono = false,
+}: {
+  children: React.ReactNode;
+  mono?: boolean;
+}) {
+  return (
+    <td
+      className={`px-4 py-3 text-sm text-gray-700 border-b border-gray-50 ${mono ? "font-mono text-xs" : ""}`}
+    >
+      {children}
+    </td>
+  );
+}
+function StatusBadge({ s }: { s: string }) {
+  const map: Record<string, string> = {
+    paid: "bg-emerald-50 text-emerald-700",
+    published: "bg-emerald-50 text-emerald-700",
+    active: "bg-emerald-50 text-emerald-700",
+    pending: "bg-amber-50 text-amber-700",
+    draft: "bg-amber-50 text-amber-700",
+    failed: "bg-red-50 text-red-700",
+    "out of stock": "bg-red-50 text-red-700",
+    "low stock": "bg-amber-50 text-amber-700",
+  };
+  return (
+    <span
+      className={`font-mono text-[9px] uppercase tracking-wider px-2 py-1 font-semibold ${map[s.toLowerCase()] ?? "bg-gray-100 text-gray-600"}`}
+    >
+      {s}
+    </span>
+  );
+}
+function ActBtns({
+  onEdit,
+  onDelete,
+}: {
+  onEdit?: () => void;
+  onDelete?: () => void;
+}) {
+  return (
+    <div className="flex gap-2">
+      {onEdit && (
+        <button
+          onClick={onEdit}
+          className="font-mono text-[9px] uppercase tracking-wider px-3 py-1.5 border border-gray-200 hover:border-gray-400 transition-colors"
+        >
+          Edit
+        </button>
+      )}
+      {onDelete && (
+        <button
+          onClick={onDelete}
+          className="font-mono text-[9px] uppercase tracking-wider px-3 py-1.5 border border-red-100 text-red-500 hover:bg-red-50 transition-colors"
+        >
+          Delete
+        </button>
+      )}
+    </div>
+  );
+}
+function AddBtn({ label, onClick }: { label: string; onClick?: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="font-mono text-[10px] uppercase tracking-wider px-4 py-2 bg-gray-950 text-white hover:bg-crimson-800 transition-colors"
+    >
+      {label}
+    </button>
+  );
+}
+function Skeleton({ className = "" }: { className?: string }) {
+  return <div className={`animate-pulse bg-gray-100 ${className}`} />;
+}
+
+// ─── Dashboard Panel ──────────────────────────────────────────────
+function DashboardPanel() {
+  const [stats, setStats] = useState<Record<string, number>>({});
+  const [orders, setOrders] = useState<unknown[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([adminService.getStats(), orderService.adminGetAll(1)])
+      .then(([s, o]) => {
+        setStats(s.data.data);
+        setOrders(o.data.data.slice(0, 5));
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const cards = [
+    { label: "Total Users", key: "total_users", color: "border-l-crimson-600" },
+    { label: "Products", key: "total_products", color: "border-l-amber-500" },
+    { label: "Exams Uploaded", key: "total_exams", color: "border-l-blue-600" },
+    { label: "Blog Posts", key: "total_posts", color: "border-l-emerald-600" },
+  ];
+
+  return (
+    <div>
+      <p className="font-display text-xl font-black text-gray-900 tracking-tight mb-5">
+        Dashboard
+      </p>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+        {cards.map((c) => (
+          <div
+            key={c.key}
+            className={`bg-white border border-gray-100 border-l-4 ${c.color} p-4`}
+          >
+            <p className="font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-2">
+              {c.label}
+            </p>
+            {loading ? (
+              <Skeleton className="h-8 w-16" />
+            ) : (
+              <p className="font-display text-3xl font-black text-gray-900">
+                {stats[c.key] ?? 0}
+              </p>
+            )}
+          </div>
+        ))}
+      </div>
+      <div className="flex justify-between items-center mb-3">
+        <p className="font-mono text-[10px] uppercase tracking-widest text-gray-400">
+          Recent Orders
+        </p>
+      </div>
+      <table className="w-full bg-white border border-gray-100">
+        <thead>
+          <tr>
+            <Th>Order</Th>
+            <Th>Customer</Th>
+            <Th>Amount</Th>
+            <Th>Status</Th>
+            <Th>Receipt</Th>
+          </tr>
+        </thead>
+        <tbody>
+          {loading
+            ? Array(3)
+                .fill(0)
+                .map((_, i) => (
+                  <tr key={i}>
+                    <td colSpan={5} className="px-4 py-3">
+                      <Skeleton className="h-4 w-full" />
+                    </td>
+                  </tr>
+                ))
+            : (orders as Record<string, string>[]).map((o) => (
+                <tr key={o.id} className="hover:bg-gray-50">
+                  <Td mono>#{o.id}</Td>
+                  <Td>{o.customer_name || "Guest"}</Td>
+                  <Td mono>KES {Number(o.total_amount).toLocaleString()}</Td>
+                  <Td>
+                    <StatusBadge s={o.status} />
+                  </Td>
+                  <Td mono>{o.mpesa_receipt || "—"}</Td>
+                </tr>
+              ))}
+        </tbody>
+      </table>
+      {stats.revenue !== undefined && (
+        <div className="mt-4 p-4 bg-emerald-950 border border-emerald-900">
+          <p className="font-mono text-[9px] uppercase tracking-widest text-emerald-600 mb-1">
+            Total Revenue (Paid Orders)
+          </p>
+          <p className="font-display text-2xl font-black text-white">
+            KES {Number(stats.revenue ?? 0).toLocaleString()}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Exams Panel ──────────────────────────────────────────────────
+function ExamsPanel() {
+  const [exams, setExams] = useState<unknown[]>([]);
+  const [loading, setLoading] = useState(true);
+  const load = () => {
+    examService
+      .getAll()
+      .then((r) => setExams(r.data.data))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  };
+  useEffect(() => {
+    load();
+  }, []);
+
+  const del = async (id: number) => {
+    if (!confirm("Delete this exam?")) return;
+    await examService.delete(id);
+    load();
+  };
+
+  const TC: Record<string, string> = {
+    CAT: "bg-amber-50 text-amber-800",
+    Main: "bg-red-50 text-red-800",
+    Assignment: "bg-green-50 text-green-800",
+  };
+
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-5">
+        <p className="font-display text-xl font-black text-gray-900 tracking-tight">
+          Exam Bank
+        </p>
+        <AddBtn label="+ Upload PDF" />
+      </div>
+      <table className="w-full bg-white border border-gray-100">
+        <thead>
+          <tr>
+            <Th>Title</Th>
+            <Th>Type</Th>
+            <Th>Subject</Th>
+            <Th>Year</Th>
+            <Th>Sem</Th>
+            <Th>Downloads</Th>
+            <Th>Actions</Th>
+          </tr>
+        </thead>
+        <tbody>
+          {loading
+            ? Array(4)
+                .fill(0)
+                .map((_, i) => (
+                  <tr key={i}>
+                    <td colSpan={7} className="px-4 py-3">
+                      <Skeleton className="h-4 w-full" />
+                    </td>
+                  </tr>
+                ))
+            : (exams as Record<string, string | number>[]).map((e) => (
+                <tr key={e.id} className="hover:bg-gray-50">
+                  <Td>
+                    <span className="font-medium">{e.title as string}</span>
+                  </Td>
+                  <Td>
+                    <span
+                      className={`font-mono text-[9px] font-bold px-2 py-1 uppercase tracking-wider ${TC[e.type as string] ?? ""}`}
+                    >
+                      {e.type as string}
+                    </span>
+                  </Td>
+                  <Td>{e.subject as string}</Td>
+                  <Td mono>{e.year_of_study as string}</Td>
+                  <Td mono>{e.semester as string}</Td>
+                  <Td mono>{e.download_count as number}</Td>
+                  <Td>
+                    <ActBtns onDelete={() => del(Number(e.id))} />
+                  </Td>
+                </tr>
+              ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// ─── Products Panel ───────────────────────────────────────────────
+function ProductsPanel() {
+  const [products, setProducts] = useState<unknown[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = () => {
+    productService
+      .getAll()
+      .then((r) => setProducts(r.data.data))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  };
+  useEffect(() => {
+    load();
+  }, []);
+
+  const del = async (id: number) => {
+    if (!confirm("Delete this product?")) return;
+    await productService.delete(id);
+    load();
+  };
+
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-5">
+        <p className="font-display text-xl font-black text-gray-900 tracking-tight">
+          Products
+        </p>
+        <AddBtn label="+ Add Product" />
+      </div>
+      <table className="w-full bg-white border border-gray-100">
+        <thead>
+          <tr>
+            <Th>Product</Th>
+            <Th>Category</Th>
+            <Th>Price</Th>
+            <Th>Stock</Th>
+            <Th>Status</Th>
+            <Th>Actions</Th>
+          </tr>
+        </thead>
+        <tbody>
+          {loading
+            ? Array(4)
+                .fill(0)
+                .map((_, i) => (
+                  <tr key={i}>
+                    <td colSpan={6} className="px-4 py-3">
+                      <Skeleton className="h-4 w-full" />
+                    </td>
+                  </tr>
+                ))
+            : (products as Record<string, string | number>[]).map((p) => {
+                const stock = Number(p.stock);
+                const statusLabel =
+                  stock === 0
+                    ? "out of stock"
+                    : stock <= 5
+                      ? "low stock"
+                      : "active";
+                return (
+                  <tr key={p.id} className="hover:bg-gray-50">
+                    <Td>
+                      <span className="font-medium">{p.name as string}</span>
+                    </Td>
+                    <Td>{p.category_name as string}</Td>
+                    <Td mono>KES {Number(p.price).toLocaleString()}</Td>
+                    <Td mono>{stock}</Td>
+                    <Td>
+                      <StatusBadge s={statusLabel} />
+                    </Td>
+                    <Td>
+                      <ActBtns onDelete={() => del(Number(p.id))} />
+                    </Td>
+                  </tr>
+                );
+              })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// ─── Blog Panel ───────────────────────────────────────────────────
+function BlogPanel() {
+  const [posts, setPosts] = useState<unknown[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = () => {
+    blogService
+      .getAll()
+      .then((r) => setPosts(r.data.data))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  };
+  useEffect(() => {
+    load();
+  }, []);
+
+  const del = async (id: number) => {
+    if (!confirm("Delete this post?")) return;
+    await blogService.delete(id);
+    load();
+  };
+
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-5">
+        <p className="font-display text-xl font-black text-gray-900 tracking-tight">
+          Blog Posts
+        </p>
+        <AddBtn label="+ New Post" />
+      </div>
+      <table className="w-full bg-white border border-gray-100">
+        <thead>
+          <tr>
+            <Th>Title</Th>
+            <Th>Author</Th>
+            <Th>Status</Th>
+            <Th>Published</Th>
+            <Th>Actions</Th>
+          </tr>
+        </thead>
+        <tbody>
+          {loading
+            ? Array(3)
+                .fill(0)
+                .map((_, i) => (
+                  <tr key={i}>
+                    <td colSpan={5} className="px-4 py-3">
+                      <Skeleton className="h-4 w-full" />
+                    </td>
+                  </tr>
+                ))
+            : (posts as Record<string, string>[]).map((p) => (
+                <tr key={p.id} className="hover:bg-gray-50">
+                  <Td>
+                    <span className="font-medium">{p.title}</span>
+                  </Td>
+                  <Td>{p.author_name}</Td>
+                  <Td>
+                    <StatusBadge s={p.status} />
+                  </Td>
+                  <Td mono>
+                    {p.published_at
+                      ? new Date(p.published_at).toLocaleDateString("en-KE")
+                      : "—"}
+                  </Td>
+                  <Td>
+                    <ActBtns onDelete={() => del(Number(p.id))} />
+                  </Td>
+                </tr>
+              ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// ─── Team Panel ───────────────────────────────────────────────────
+function TeamPanel() {
+  const [members, setMembers] = useState<unknown[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = () => {
+    teamService
+      .getAll()
+      .then((r) => setMembers(r.data.data))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  };
+  useEffect(() => {
+    load();
+  }, []);
+
+  const del = async (id: number) => {
+    if (!confirm("Delete this team member?")) return;
+    await teamService.delete(id);
+    load();
+  };
+
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-5">
+        <p className="font-display text-xl font-black text-gray-900 tracking-tight">
+          Team Members
+        </p>
+        <AddBtn label="+ Add Member" />
+      </div>
+      <table className="w-full bg-white border border-gray-100">
+        <thead>
+          <tr>
+            <Th>Member</Th>
+            <Th>Role</Th>
+            <Th>Actions</Th>
+          </tr>
+        </thead>
+        <tbody>
+          {loading
+            ? Array(4)
+                .fill(0)
+                .map((_, i) => (
+                  <tr key={i}>
+                    <td colSpan={3} className="px-4 py-3">
+                      <Skeleton className="h-4 w-full" />
+                    </td>
+                  </tr>
+                ))
+            : (members as Record<string, string>[]).map((m) => (
+                <tr key={m.id} className="hover:bg-gray-50">
+                  <Td>
+                    <div className="flex items-center gap-3">
+                      <div className="w-7 h-7 bg-crimson-100 flex items-center justify-center font-display text-xs font-bold text-crimson-800">
+                        {(m.name as string)
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")
+                          .slice(0, 2)}
+                      </div>
+                      <span className="font-medium">{m.name}</span>
+                    </div>
+                  </Td>
+                  <Td>{m.role}</Td>
+                  <Td>
+                    <ActBtns onDelete={() => del(Number(m.id))} />
+                  </Td>
+                </tr>
+              ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// ─── Orders Panel ─────────────────────────────────────────────────
+function OrdersPanel() {
+  const [orders, setOrders] = useState<unknown[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    orderService
+      .adminGetAll(1)
+      .then((r) => setOrders(r.data.data))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  return (
+    <div>
+      <p className="font-display text-xl font-black text-gray-900 tracking-tight mb-5">
+        Orders & M-Pesa
+      </p>
+
+      {/* Flow */}
+      <div className="flex items-center gap-0 flex-wrap mb-6 p-4 bg-emerald-950 border border-emerald-900">
+        {[
+          "Add to cart",
+          "Enter phone",
+          "STK Push sent",
+          "Approve PIN",
+          "Confirmed",
+        ].map((s, i) => (
+          <div key={s} className="flex items-center">
+            <span
+              className={`font-mono text-[10px] uppercase tracking-wider px-3 py-2 ${i === 4 ? "bg-emerald-600 text-white" : "bg-emerald-950 border border-emerald-800 text-emerald-600"}`}
+            >
+              {s}
+            </span>
+            {i < 4 && (
+              <span className="font-mono text-[10px] text-emerald-800 px-1">
+                ›
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <table className="w-full bg-white border border-gray-100">
+        <thead>
+          <tr>
+            <Th>Order</Th>
+            <Th>Customer</Th>
+            <Th>Phone</Th>
+            <Th>Amount</Th>
+            <Th>Receipt</Th>
+            <Th>Status</Th>
+          </tr>
+        </thead>
+        <tbody>
+          {loading
+            ? Array(3)
+                .fill(0)
+                .map((_, i) => (
+                  <tr key={i}>
+                    <td colSpan={6} className="px-4 py-3">
+                      <Skeleton className="h-4 w-full" />
+                    </td>
+                  </tr>
+                ))
+            : (orders as Record<string, string>[]).map((o) => (
+                <tr key={o.id} className="hover:bg-gray-50">
+                  <Td mono>#{o.id}</Td>
+                  <Td>{o.customer_name || "Guest"}</Td>
+                  <Td mono>{o.phone_number}</Td>
+                  <Td mono>KES {Number(o.total_amount).toLocaleString()}</Td>
+                  <Td mono>{o.mpesa_receipt || "—"}</Td>
+                  <Td>
+                    <StatusBadge s={o.status} />
+                  </Td>
+                </tr>
+              ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// ─── Gallery Panel ────────────────────────────────────────────────
+function GalleryPanel() {
+  const [images, setImages] = useState<unknown[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = () => {
+    galleryService
+      .getAll()
+      .then((r) => setImages(r.data.data))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  };
+  useEffect(() => {
+    load();
+  }, []);
+
+  const del = async (id: number) => {
+    if (!confirm("Delete this image?")) return;
+    await galleryService.delete(id);
+    load();
+  };
+
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-5">
+        <p className="font-display text-xl font-black text-gray-900 tracking-tight">
+          Gallery
+        </p>
+        <AddBtn label="+ Upload Images" />
+      </div>
+      {loading ? (
+        <div className="grid grid-cols-6 gap-2">
+          {Array(6)
+            .fill(0)
+            .map((_, i) => (
+              <Skeleton key={i} className="aspect-square rounded-none" />
+            ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-6 gap-2">
+          {(images as Record<string, string>[]).map((img) => (
+            <div
+              key={img.id}
+              className="aspect-square relative group overflow-hidden bg-gray-100"
+            >
+              {img.image_path ? (
+                <img
+                  src={`/api/storage/uploads/${img.image_path}`}
+                  alt={img.title || ""}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-gray-200" />
+              )}
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-crimson-900/60 transition-all flex items-center justify-center">
+                <button
+                  onClick={() => del(Number(img.id))}
+                  className="opacity-0 group-hover:opacity-100 font-mono text-[9px] text-white bg-crimson-800 px-2 py-1 uppercase tracking-wider transition-opacity"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Pages Panel ──────────────────────────────────────────────────
+function PagesPanel() {
+  const [pages, setPages] = useState<unknown[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = () => {
+    cmsService
+      .getPages()
+      .then((r) => setPages(r.data.data))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  };
+  useEffect(() => {
+    load();
+  }, []);
+
+  const del = async (id: number) => {
+    if (!confirm("Delete this page?")) return;
+    await cmsService.deletePage(id);
+    load();
+  };
+
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-5">
+        <p className="font-display text-xl font-black text-gray-900 tracking-tight">
+          Page Manager (CMS)
+        </p>
+        <AddBtn label="+ New Page" />
+      </div>
+      <table className="w-full bg-white border border-gray-100">
+        <thead>
+          <tr>
+            <Th>Page</Th>
+            <Th>Slug</Th>
+            <Th>Status</Th>
+            <Th>Updated</Th>
+            <Th>Actions</Th>
+          </tr>
+        </thead>
+        <tbody>
+          {loading
+            ? Array(3)
+                .fill(0)
+                .map((_, i) => (
+                  <tr key={i}>
+                    <td colSpan={5} className="px-4 py-3">
+                      <Skeleton className="h-4 w-full" />
+                    </td>
+                  </tr>
+                ))
+            : (pages as Record<string, string | number>[]).map((p) => (
+                <tr key={p.id} className="hover:bg-gray-50">
+                  <Td>
+                    <span className="font-medium">{p.title as string}</span>
+                  </Td>
+                  <Td mono>/{p.slug as string}</Td>
+                  <Td>
+                    <StatusBadge s={p.is_published ? "published" : "draft"} />
+                  </Td>
+                  <Td mono>
+                    {new Date(p.updated_at as string).toLocaleDateString(
+                      "en-KE",
+                    )}
+                  </Td>
+                  <Td>
+                    <ActBtns onDelete={() => del(Number(p.id))} />
+                  </Td>
+                </tr>
+              ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// ─── Hero Panel ───────────────────────────────────────────────────
+function HeroPanel() {
+  const [slides, setSlides] = useState<unknown[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = () => {
+    heroService
+      .getAll()
+      .then((r) => setSlides(r.data.data))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  };
+  useEffect(() => {
+    load();
+  }, []);
+
+  const del = async (id: number) => {
+    if (!confirm("Delete this slide?")) return;
+    await heroService.delete(id);
+    load();
+  };
+
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-5">
+        <p className="font-display text-xl font-black text-gray-900 tracking-tight">
+          Hero Slides
+        </p>
+        <AddBtn label="+ Upload Slide" />
+      </div>
+      <table className="w-full bg-white border border-gray-100">
+        <thead>
+          <tr>
+            <Th>Preview</Th>
+            <Th>Headline</Th>
+            <Th>CTA</Th>
+            <Th>Order</Th>
+            <Th>Actions</Th>
+          </tr>
+        </thead>
+        <tbody>
+          {loading
+            ? Array(2)
+                .fill(0)
+                .map((_, i) => (
+                  <tr key={i}>
+                    <td colSpan={5} className="px-4 py-3">
+                      <Skeleton className="h-4 w-full" />
+                    </td>
+                  </tr>
+                ))
+            : (slides as Record<string, string | number>[]).map((s) => (
+                <tr key={s.id} className="hover:bg-gray-50">
+                  <Td>
+                    <div className="w-16 h-10 bg-gray-950 flex items-center justify-center">
+                      {s.image_path ? (
+                        <img
+                          src={`/api/storage/uploads/${s.image_path as string}`}
+                          alt=""
+                          className="w-full h-full object-cover opacity-60"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-gray-900 to-crimson-950" />
+                      )}
+                    </div>
+                  </Td>
+                  <Td>
+                    <span className="font-medium text-xs">
+                      {s.headline as string}
+                    </span>
+                  </Td>
+                  <Td>
+                    <span className="font-mono text-[10px] text-crimson-700">
+                      {s.cta_text as string}
+                    </span>
+                  </Td>
+                  <Td mono>{s.sort_order as number}</Td>
+                  <Td>
+                    <ActBtns onDelete={() => del(Number(s.id))} />
+                  </Td>
+                </tr>
+              ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// ─── Main Admin Dashboard ─────────────────────────────────────────
+// ─── Partners Panel ──────────────────────────────────────────────
+function PartnersPanel() {
+  const [partners, setPartners] = useState<{id:number;name:string;full:string;logo_path:string}[]>([])
+  const [loading,  setLoading]  = useState(true)
+  const [saving,   setSaving]   = useState(false)
+  const [err,      setErr]      = useState('')
+  const [form, setForm] = useState({ name: '', full: '' })
+  const [modal, setModal] = useState(false)
+  const fileRef = useRef<HTMLInputElement>(null)
+
+  const load = () => {
+    setLoading(true)
+    partnerService.getAll().then(r => setPartners(r.data.data ?? [])).catch(()=>setPartners([])).finally(()=>setLoading(false))
+  }
+  useEffect(()=>{ load() },[])
+
+  const del = async (id: number) => {
+    if (!confirm('Remove this partner?')) return
+    await partnerService.delete(id).catch(()=>{})
+    load()
+  }
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault(); setSaving(true); setErr('')
+    try {
+      const fd = new FormData()
+      fd.append('name', form.name)
+      fd.append('full', form.full)
+      if (fileRef.current?.files?.[0]) fd.append('logo', fileRef.current.files[0])
+      await partnerService.create(fd)
+      setModal(false)
+      setForm({ name:'', full:'' })
+      load()
+    } catch { setErr('Failed to add partner.') }
+    finally { setSaving(false) }
+  }
+
+  return (
+    <div>
+      {modal && (
+        <Modal title="Add Partner" onClose={()=>setModal(false)}>
+          <form onSubmit={submit} className="space-y-4">
+            {err && <p className="text-red-500 text-xs font-mono bg-red-50 p-2">{err}</p>}
+            <Field label="Partner Name *">
+              <input className={inp} value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} required placeholder="e.g. IEEE" />
+            </Field>
+            <Field label="Full Name / Description *">
+              <input className={inp} value={form.full} onChange={e=>setForm(f=>({...f,full:e.target.value}))} required placeholder="e.g. Institute of Electrical & Electronics Engineers" />
+            </Field>
+            <Field label="Logo Image *">
+              <input type="file" ref={fileRef} accept="image/*" className="text-sm text-gray-600" required />
+              <p className="font-mono text-[9px] text-gray-400 mt-1">PNG or JPG, ideally with transparent or white background.</p>
+            </Field>
+            <div className="flex gap-2 pt-1"><SaveBtn saving={saving} label="Add Partner" /><CancelBtn onClick={()=>setModal(false)} /></div>
+          </form>
+        </Modal>
+      )}
+
+      <div className="flex justify-between items-center mb-5">
+        <p className="font-display text-xl font-black text-gray-900 tracking-tight">Partners & Affiliates</p>
+        <AddBtn label="+ Add Partner" onClick={()=>setModal(true)} />
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        {loading ? Array(4).fill(0).map((_,i) => (
+          <div key={i} className="bg-white border border-gray-100 p-4 space-y-2">
+            <Skeleton className="h-14 w-full" />
+            <Skeleton className="h-3 w-24" />
+          </div>
+        )) : partners.length === 0 ? (
+          <div className="col-span-4 py-12 text-center text-gray-400 font-mono text-xs">No partners yet.</div>
+        ) : partners.map(p => (
+          <div key={p.id} className="bg-white border border-gray-100 p-4 flex flex-col items-center gap-3 group relative">
+            <div className="h-16 w-full flex items-center justify-center">
+              <img src={`/api/storage/uploads/${p.logo_path}`} alt={p.name}
+                className="max-h-14 max-w-full object-contain" />
+            </div>
+            <div className="text-center">
+              <p className="font-display font-bold text-sm text-gray-900">{p.name}</p>
+              <p className="font-mono text-[9px] text-gray-400 uppercase tracking-wide mt-0.5">{p.full}</p>
+            </div>
+            <button onClick={()=>del(p.id)}
+              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity font-mono text-[9px] uppercase px-2 py-1 border border-red-200 text-red-500 hover:bg-red-50 bg-white">
+              Remove
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-6 p-4 bg-pink-50 border border-pink-100">
+        <p className="font-mono text-[9px] uppercase tracking-widest text-gray-500">
+          Tip: Partner logos appear in the scrolling marquee on the homepage. Use PNG with white or transparent background for best results.
+        </p>
+      </div>
+    </div>
+  )
+}
+
+type Panel =
+  | "dashboard"
+  | "exams"
+  | "products"
+  | "blog"
+  | "team"
+  | "gallery"
+  | "orders"
+  | "pages"
+  | "hero"
+  | "partners";
+
+const PANELS: Record<Panel, React.ReactNode> = {
+  dashboard: <DashboardPanel />,
+  exams: <ExamsPanel />,
+  products: <ProductsPanel />,
+  blog: <BlogPanel />,
+  team: <TeamPanel />,
+  gallery: <GalleryPanel />,
+  orders: <OrdersPanel />,
+  pages: <PagesPanel />,
+  hero: <HeroPanel />,
+  partners: <PartnersPanel />,
+};
+
+const NAV_ITEMS = [
+  {
+    id: "dashboard" as Panel,
+    label: "Dashboard",
+    group: "Overview",
+    icon: (
+      <>
+        <rect x="3" y="3" width="7" height="7" />
+        <rect x="14" y="3" width="7" height="7" />
+        <rect x="3" y="14" width="7" height="7" />
+        <rect x="14" y="14" width="7" height="7" />
+      </>
+    ),
+  },
+  {
+    id: "pages" as Panel,
+    label: "Page Manager",
+    group: "Content",
+    icon: (
+      <>
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+      </>
+    ),
+  },
+  {
+    id: "hero" as Panel,
+    label: "Hero Slides",
+    group: "Content",
+    icon: (
+      <>
+        <rect x="1" y="5" width="22" height="14" rx="2" />
+        <circle cx="6" cy="10" r="2" />
+      </>
+    ),
+  },
+  {
+    id: "blog" as Panel,
+    label: "Blog Posts",
+    group: "Content",
+    icon: (
+      <>
+        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+      </>
+    ),
+  },
+  {
+    id: "partners" as Panel,
+    label: "Partners",
+    group: "Content",
+    icon: (
+      <>
+        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+        <path d="M16 3.13a4 4 0 010 7.75"/>
+      </>
+    ),
+  },
+  {
+    id: "team" as Panel,
+    label: "Team",
+    group: "Community",
+    icon: (
+      <>
+        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+      </>
+    ),
+  },
+  {
+    id: "gallery" as Panel,
+    label: "Gallery",
+    group: "Community",
+    icon: (
+      <>
+        <rect x="3" y="3" width="18" height="18" rx="2" />
+        <circle cx="8.5" cy="8.5" r="1.5" />
+        <polyline points="21 15 16 10 5 21" />
+      </>
+    ),
+  },
+  {
+    id: "exams" as Panel,
+    label: "Exam Bank",
+    group: "Academic",
+    icon: (
+      <>
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+        <line x1="16" y1="13" x2="8" y2="13" />
+        <line x1="16" y1="17" x2="8" y2="17" />
+      </>
+    ),
+  },
+  {
+    id: "products" as Panel,
+    label: "Products",
+    group: "Shop",
+    icon: (
+      <>
+        <circle cx="9" cy="21" r="1" />
+        <circle cx="20" cy="21" r="1" />
+        <path d="M1 1h4l2.68 13.39a2 2 0 001.99 1.61h9.72a2 2 0 001.99-1.61L23 6H6" />
+      </>
+    ),
+  },
+  {
+    id: "orders" as Panel,
+    label: "Orders",
+    group: "Shop",
+    icon: (
+      <>
+        <path d="M9 11l3 3L22 4" />
+        <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+      </>
+    ),
+  },
+];
+
+export function AdminDashboardPage() {
+  const { isAdmin, user, logout } = useAuth();
+  const [active, setActive] = useState<Panel>("dashboard");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // if (!isAdmin) return <Navigate to="/admin/login" replace />
+
+  const groups = [...new Set(NAV_ITEMS.map((n) => n.group))];
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Topbar */}
+      <header className="bg-crimson-800 h-14 flex items-center justify-between px-5 flex-shrink-0 border-b border-crimson-900">
+        <div className="flex items-center gap-3">
+          <button
+            className="md:hidden text-white/70 hover:text-white"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+            >
+              <line x1="4" y1="6" x2="20" y2="6" />
+              <line x1="4" y1="12" x2="20" y2="12" />
+              <line x1="4" y1="18" x2="20" y2="18" />
+            </svg>
+          </button>
+          <div className="w-7 h-7 bg-white/15 flex items-center justify-center">
+            <svg
+              viewBox="0 0 24 24"
+              className="w-4 h-4"
+              fill="none"
+              stroke="white"
+              strokeWidth="2"
+              strokeLinecap="round"
+            >
+              <circle cx="12" cy="12" r="3.5" />
+              <line x1="12" y1="2" x2="12" y2="5.5" />
+              <line x1="12" y1="18.5" x2="12" y2="22" />
+              <line x1="2" y1="12" x2="5.5" y2="12" />
+              <line x1="18.5" y1="12" x2="22" y2="12" />
+            </svg>
+          </div>
+          <span className="font-display font-black text-white text-base tracking-tight">
+            ESA-MU Admin
+          </span>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="w-7 h-7 bg-white/15 flex items-center justify-center font-display font-bold text-white text-xs">
+            {user?.name?.charAt(0) ?? "A"}
+          </div>
+          <span className="text-white/70 text-xs font-mono hidden sm:block">
+            {user?.name}
+          </span>
+          <button
+            onClick={logout}
+            className="font-mono text-[10px] text-white/50 hover:text-white uppercase tracking-wider transition-colors"
+          >
+            Logout
+          </button>
+        </div>
+      </header>
+
+      <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar */}
+        <aside
+          className={`${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 fixed md:static inset-y-0 left-0 z-40 w-52 bg-gray-900 flex flex-col transition-transform duration-200 pt-14 md:pt-0`}
+        >
+          <nav className="flex-1 overflow-y-auto py-3">
+            {groups.map((group) => (
+              <div key={group} className="mb-1">
+                <p className="font-mono text-[9px] uppercase tracking-widest text-gray-600 px-4 py-2">
+                  {group}
+                </p>
+                {NAV_ITEMS.filter((n) => n.group === group).map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      setActive(item.id);
+                      setSidebarOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-body transition-all border-l-2 ${
+                      active === item.id
+                        ? "bg-gray-800 text-white border-l-crimson-600"
+                        : "text-gray-500 border-l-transparent hover:bg-gray-800/50 hover:text-gray-300"
+                    }`}
+                  >
+                    <svg
+                      className="w-3.5 h-3.5 flex-shrink-0"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={1.8}
+                      strokeLinecap="round"
+                    >
+                      {item.icon}
+                    </svg>
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            ))}
+          </nav>
+        </aside>
+
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 z-30 bg-black/50 md:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
+        {/* Content */}
+        <main className="flex-1 overflow-y-auto p-6 md:p-8">
+          {PANELS[active]}
+        </main>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,222 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --crimson: #8B1A1A;
+    --crimson-light: #f9ecec;
+    --crimson-mid: #c0392b;
+  }
+
+  * {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background-color: #fff;
+    color: #1a1a1a;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: 'Playfair Display', serif;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-crimson-800 text-white px-6 py-3 rounded-sm font-body font-medium
+           hover:bg-crimson-700 active:scale-95 transition-all duration-200
+           focus:outline-none focus:ring-2 focus:ring-crimson-400 focus:ring-offset-2;
+  }
+
+  .btn-outline {
+    @apply border border-crimson-800 text-crimson-800 px-6 py-3 rounded-sm font-body font-medium
+           hover:bg-crimson-50 active:scale-95 transition-all duration-200;
+  }
+
+  .btn-ghost {
+    @apply text-crimson-800 px-4 py-2 font-body font-medium
+           hover:bg-crimson-50 rounded-sm transition-all duration-200;
+  }
+
+  .section-label {
+    @apply text-xs font-mono font-medium tracking-[0.2em] uppercase text-crimson-600;
+  }
+
+  .section-title {
+    @apply font-display text-3xl md:text-4xl font-bold text-gray-900 leading-tight;
+  }
+
+  .card {
+    @apply bg-white border border-gray-100 rounded-sm overflow-hidden
+           hover:shadow-lg hover:-translate-y-1 transition-all duration-300;
+  }
+
+  .input-field {
+    @apply w-full border border-gray-200 px-4 py-3 rounded-sm text-sm
+           focus:outline-none focus:ring-2 focus:ring-crimson-400 focus:border-transparent
+           placeholder:text-gray-400 font-body transition-all duration-200;
+  }
+
+  .nav-link {
+    @apply text-sm font-body font-medium text-gray-700 hover:text-crimson-800
+           relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5
+           after:bg-crimson-800 hover:after:w-full after:transition-all after:duration-300;
+  }
+}
+
+/* Ticker */
+@keyframes ticker {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: #f9ecec; }
+::-webkit-scrollbar-thumb { background: #8B1A1A; border-radius: 2px; }
+
+/* Hero slider */
+.hero-slide {
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+/* Exam bank tree */
+.exam-tree-item:hover {
+  background: #fdf2f2;
+}
+
+/* Animate delays */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+
+/* Gear spin on logo hover */
+.gear-logo:hover svg {
+  animation: spin 2s linear infinite;
+}
+
+/* ══════════════════════════════════════════════
+   HERO ANIMATIONS
+══════════════════════════════════════════════ */
+@keyframes heroImageFade {
+  from { opacity: 0; transform: scale(1.04); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes heroContentIn {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ══════════════════════════════════════════════
+   SCROLL-REVEAL ANIMATIONS
+══════════════════════════════════════════════ */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(36px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInLeft {
+  from { opacity: 0; transform: translateX(-32px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes fadeInRight {
+  from { opacity: 0; transform: translateX(32px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.93); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* Intersection-observer driven classes */
+.anim-fade-up   { opacity: 0; transform: translateY(36px);  transition: opacity 0.65s ease, transform 0.65s cubic-bezier(.22,.68,0,1.2); }
+.anim-fade-left { opacity: 0; transform: translateX(-32px); transition: opacity 0.65s ease, transform 0.65s ease; }
+.anim-fade-right{ opacity: 0; transform: translateX(32px);  transition: opacity 0.65s ease, transform 0.65s ease; }
+.anim-scale     { opacity: 0; transform: scale(0.93);        transition: opacity 0.55s ease, transform 0.55s cubic-bezier(.22,.68,0,1.2); }
+.anim-fade      { opacity: 0;                                transition: opacity 0.7s ease; }
+
+.anim-fade-up.in-view,
+.anim-fade-left.in-view,
+.anim-fade-right.in-view,
+.anim-fade.in-view  { opacity: 1; transform: none; }
+.anim-scale.in-view { opacity: 1; transform: scale(1); }
+
+/* Stagger children */
+.stagger > *:nth-child(1)  { transition-delay: 0ms;   }
+.stagger > *:nth-child(2)  { transition-delay: 80ms;  }
+.stagger > *:nth-child(3)  { transition-delay: 160ms; }
+.stagger > *:nth-child(4)  { transition-delay: 240ms; }
+.stagger > *:nth-child(5)  { transition-delay: 320ms; }
+.stagger > *:nth-child(6)  { transition-delay: 400ms; }
+
+/* ══════════════════════════════════════════════
+   PARTNERS MARQUEE
+══════════════════════════════════════════════ */
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-33.333%); }
+}
+
+.animate-marquee-slow {
+  animation: marquee 30s linear infinite;
+}
+.animate-marquee-slow:hover {
+  animation-play-state: paused;
+}
+
+/* ══════════════════════════════════════════════
+   CARD HOVER LIFT
+══════════════════════════════════════════════ */
+.card-hover {
+  transition: transform 0.28s cubic-bezier(.22,.68,0,1.2),
+              box-shadow 0.28s ease,
+              border-color 0.2s ease;
+}
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(139,26,26,0.09);
+}
+
+/* ══════════════════════════════════════════════
+   IMAGE ZOOM ON HOVER
+══════════════════════════════════════════════ */
+.img-zoom { overflow: hidden; }
+.img-zoom img {
+  transition: transform 0.5s cubic-bezier(.22,.68,0,1.2);
+}
+.img-zoom:hover img { transform: scale(1.06); }
+
+/* ══════════════════════════════════════════════
+   PAGE TRANSITION
+══════════════════════════════════════════════ */
+main { animation: fadeInUp 0.45s ease both; }
+
+/* Button press */
+button:active, a:active { transform: scale(0.97); }
+
+/* ══════════════════════════════════════════════
+   FOOTER (light pink)
+══════════════════════════════════════════════ */
+.esamu-footer {
+  background-color: #fdf2f2;
+  color: #4a1010;
+}
+.esamu-footer a           { color: #8B1A1A; transition: color 0.2s; }
+.esamu-footer a:hover     { color: #3d0a0a; }
+.esamu-footer .footer-divider { border-color: #f5c6c6; }
+.esamu-footer .footer-muted   { color: #9b4040; }
+.esamu-footer .footer-social-btn {
+  background: #fbe8e8;
+  border: 1px solid #e8b4b4;
+  transition: background 0.2s, border-color 0.2s;
+}
+.esamu-footer .footer-social-btn:hover {
+  background: #8B1A1A;
+  border-color: #8B1A1A;
+}
