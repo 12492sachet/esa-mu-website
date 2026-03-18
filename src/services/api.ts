@@ -124,6 +124,10 @@ export const eventService = {
   update: (id: number, data: FormData) =>
     api.post(`/admin/events/${id}`, data, { headers: { 'Content-Type': 'multipart/form-data' } }),
   delete: (id: number) => api.delete(`/admin/events/${id}`),
+  like:   (id: number) => api.post(`/events/${id}/like`),
+  comment: (id: number, payload: { name: string; body: string }) =>
+    api.post(`/events/${id}/comments`, payload),
+  getComments: (id: number) => api.get(`/events/${id}/comments`),
 }
 
 export const projectService = {
@@ -137,6 +141,11 @@ export const adminProjectService = {
   approve: (id: number) => api.post(`/admin/projects/${id}/approve`),
   reject: (id: number) => api.post(`/admin/projects/${id}/reject`),
   delete: (id: number) => api.delete(`/admin/projects/${id}`),
+}
+
+export const analyticsService = {
+  trackVisit: (path: string) =>
+    api.post('/analytics/visit', { path }),
 }
 
 export function downloadBlob(blob: Blob, filename: string) {

@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Outlet, useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
 import { CartProvider } from './context/CartContext'
 import { AuthProvider } from './context/AuthContext'
 import Navbar from './components/Navbar'
@@ -11,8 +12,22 @@ import { BlogPage, BlogPostPage } from './pages/BlogPage'
 import { AboutPage, TeamPage, GalleryPage, ContactPage } from './pages/StaticPages'
 import { AdminLoginPage, AdminDashboardPage } from './pages/AdminPages'
 import EventsPage from './pages/EventsPage'
+import EventDetailPage from './pages/EventDetailPage'
 import StudentProjectsPage from './pages/StudentProjectsPage'
 import DepartmentPage from './pages/DepartmentsPage'
+import { analyticsService } from './services/api'
+
+function AnalyticsTracker() {
+  const location = useLocation()
+
+  useEffect(() => {
+    analyticsService.trackVisit(location.pathname).catch(() => {
+      // ignore analytics errors
+    })
+  }, [location.pathname])
+
+  return null
+}
 
 // Layout wrapper for public pages (with Navbar + Footer)
 function PublicLayout() {
@@ -30,6 +45,7 @@ export default function App() {
     <AuthProvider>
       <CartProvider>
         <BrowserRouter>
+          <AnalyticsTracker />
           <Routes>
             {/* Public pages */}
             <Route element={<PublicLayout />}>
@@ -41,6 +57,7 @@ export default function App() {
               <Route path="/blog/:id"              element={<BlogPostPage />} />
               <Route path="/exam-bank"             element={<ExamBankPage />} />
               <Route path="/events"                element={<EventsPage />} />
+              <Route path="/events/:id"            element={<EventDetailPage />} />
               <Route path="/projects"              element={<StudentProjectsPage />} />
               <Route path="/marketplace"           element={<MarketplacePage />} />
               <Route path="/marketplace/cart"      element={<CartPage />} />

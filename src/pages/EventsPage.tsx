@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { eventService } from '../services/api'
 
 export default function EventsPage() {
@@ -66,7 +67,11 @@ export default function EventsPage() {
               const date = new Date(ev.event_date)
               const isPast = date < new Date()
               return (
-                <div key={ev.id} className={`flex gap-5 p-5 border transition-all duration-300 card-hover ${isPast ? 'border-gray-100 bg-gray-50' : 'border-gray-200 bg-white hover:border-gray-400'}`}>
+                <Link
+                  key={ev.id}
+                  to={`/events/${ev.id}`}
+                  className={`flex gap-5 p-5 border transition-all duration-300 card-hover ${isPast ? 'border-gray-100 bg-gray-50' : 'border-gray-200 bg-white hover:border-gray-400'}`}
+                >
                   {/* Date block */}
                   <div className={`flex-shrink-0 w-14 text-center pt-1 ${isPast ? 'opacity-40' : ''}`}>
                     <p className="font-mono text-[9px] uppercase tracking-widest text-gray-500">{date.toLocaleString('en', { month: 'short' })}</p>
@@ -107,7 +112,7 @@ export default function EventsPage() {
                       <img src={`/api/storage/uploads/${ev.image_path}`} alt="" className={`w-full h-full object-cover ${isPast ? 'grayscale opacity-50' : ''}`} />
                     </div>
                   )}
-                </div>
+                </Link>
               )
             })}
           </div>

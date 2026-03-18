@@ -337,6 +337,8 @@ function DashboardPanel() {
     { label: "Products", key: "total_products", color: "border-l-amber-500" },
     { label: "Exams Uploaded", key: "total_exams", color: "border-l-blue-600" },
     { label: "Blog Posts", key: "total_posts", color: "border-l-emerald-600" },
+    { label: "Visitors (Total)", key: "total_visits", color: "border-l-fuchsia-600" },
+    { label: "Visitors (Today)", key: "visits_today", color: "border-l-sky-600" },
   ];
 
   return (
