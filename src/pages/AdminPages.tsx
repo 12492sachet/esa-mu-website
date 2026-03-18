@@ -211,6 +211,24 @@ const inp =
 const sel =
   "w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-crimson-500 bg-white";
 
+function apiErr(e: unknown, fallback: string) {
+  const anyE = e as any;
+  const status = anyE?.response?.status;
+  const data = anyE?.response?.data;
+
+  const msgFromData =
+    (typeof data === "string" && data) ||
+    data?.message ||
+    data?.error ||
+    (Array.isArray(data?.errors) && data.errors.join(", ")) ||
+    (typeof data?.errors === "object" && data?.errors
+      ? Object.values(data.errors).flat().join(", ")
+      : "");
+
+  const base = msgFromData || anyE?.message || fallback;
+  return status ? `${base} (HTTP ${status})` : base;
+}
+
 function Modal({
   title,
   onClose,
@@ -440,8 +458,8 @@ function ExamsPanel() {
       if (fileRef.current) fileRef.current.value = "";
       setLoading(true);
       load();
-    } catch {
-      setErr("Failed to upload exam PDF.");
+    } catch (e: unknown) {
+      setErr(apiErr(e, "Failed to upload exam PDF."));
     } finally {
       setSaving(false);
     }
@@ -665,8 +683,8 @@ function ProductsPanel() {
       if (fileRef.current) fileRef.current.value = "";
       setLoading(true);
       load();
-    } catch {
-      setErr("Failed to add product.");
+    } catch (e: unknown) {
+      setErr(apiErr(e, "Failed to add product."));
     } finally {
       setSaving(false);
     }
@@ -873,8 +891,8 @@ function BlogPanel() {
       if (fileRef.current) fileRef.current.value = "";
       setLoading(true);
       load();
-    } catch {
-      setErr("Failed to create blog post.");
+    } catch (e: unknown) {
+      setErr(apiErr(e, "Failed to create blog post."));
     } finally {
       setSaving(false);
     }
@@ -1048,8 +1066,8 @@ function TeamPanel() {
       if (fileRef.current) fileRef.current.value = "";
       setLoading(true);
       load();
-    } catch {
-      setErr("Failed to add team member.");
+    } catch (e: unknown) {
+      setErr(apiErr(e, "Failed to add team member."));
     } finally {
       setSaving(false);
     }
@@ -1286,8 +1304,8 @@ function GalleryPanel() {
       if (fileRef.current) fileRef.current.value = "";
       setLoading(true);
       load();
-    } catch {
-      setErr("Failed to upload image.");
+    } catch (e: unknown) {
+      setErr(apiErr(e, "Failed to upload image."));
     } finally {
       setSaving(false);
     }
@@ -1435,8 +1453,8 @@ function PagesPanel() {
       setForm({ title: "", slug: "", content: "", is_published: false });
       setLoading(true);
       load();
-    } catch {
-      setErr("Failed to create page.");
+    } catch (e: unknown) {
+      setErr(apiErr(e, "Failed to create page."));
     } finally {
       setSaving(false);
     }
@@ -1607,8 +1625,8 @@ function HeroPanel() {
       if (fileRef.current) fileRef.current.value = "";
       setLoading(true);
       load();
-    } catch {
-      setErr("Failed to upload hero slide.");
+    } catch (e: unknown) {
+      setErr(apiErr(e, "Failed to upload hero slide."));
     } finally {
       setSaving(false);
     }
@@ -1800,8 +1818,8 @@ function PartnersPanel() {
       setModal(false);
       setForm({ name: "", full: "" });
       load();
-    } catch {
-      setErr("Failed to add partner.");
+    } catch (e: unknown) {
+      setErr(apiErr(e, "Failed to add partner."));
     } finally {
       setSaving(false);
     }
