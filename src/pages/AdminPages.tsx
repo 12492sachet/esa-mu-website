@@ -1057,7 +1057,7 @@ function TeamPanel() {
     name: "",
     role: "",
     linkedin_url: "",
-    x_url: "",
+    twitter_url: "",
     instagram_url: "",
   });
 
@@ -1093,6 +1093,9 @@ function TeamPanel() {
         );
         return;
       }
+      // Align with public TeamPage fields (`profile_image`).
+      fd.append("profile_image", f);
+      // Backwards/alternate key support (some backends expect `image`).
       fd.append("image", f);
       await teamService.create(fd);
       setModal(false);
@@ -1100,7 +1103,7 @@ function TeamPanel() {
         name: "",
         role: "",
         linkedin_url: "",
-        x_url: "",
+        twitter_url: "",
         instagram_url: "",
       });
       if (fileRef.current) fileRef.current.value = "";
@@ -1166,9 +1169,9 @@ function TeamPanel() {
                 <input
                   className={inp}
                   type="url"
-                  value={form.x_url}
+                  value={form.twitter_url}
                   onChange={(e) =>
-                    setForm((p) => ({ ...p, x_url: e.target.value }))
+                    setForm((p) => ({ ...p, twitter_url: e.target.value }))
                   }
                   placeholder="https://x.com/…"
                 />
@@ -1230,13 +1233,21 @@ function TeamPanel() {
                 <tr key={m.id} className="hover:bg-gray-50">
                   <Td>
                     <div className="flex items-center gap-3">
-                      <div className="w-7 h-7 bg-crimson-100 flex items-center justify-center font-display text-xs font-bold text-crimson-800">
-                        {(m.name as string)
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")
-                          .slice(0, 2)}
-                      </div>
+                      {m.profile_image ? (
+                        <img
+                          src={`/api/storage/uploads/${m.profile_image}`}
+                          alt={m.name}
+                          className="w-7 h-7 object-cover"
+                        />
+                      ) : (
+                        <div className="w-7 h-7 bg-crimson-100 flex items-center justify-center font-display text-xs font-bold text-crimson-800">
+                          {(m.name as string)
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")
+                            .slice(0, 2)}
+                        </div>
+                      )}
                       <span className="font-medium">{m.name}</span>
                     </div>
                   </Td>
