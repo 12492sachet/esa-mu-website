@@ -452,6 +452,9 @@ function ExamsPanel() {
         return;
       }
       fd.append("pdf", f);
+      // Some backends validate the upload under a generic key like `file`
+      // (safe to send both; server will read the expected one).
+      fd.append("file", f);
       await examService.create(fd);
       setModal(false);
       setForm({
@@ -1050,7 +1053,13 @@ function TeamPanel() {
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
-  const [form, setForm] = useState({ name: "", role: "" });
+  const [form, setForm] = useState({
+    name: "",
+    role: "",
+    linkedin_url: "",
+    x_url: "",
+    instagram_url: "",
+  });
 
   const load = () => {
     teamService
@@ -1069,12 +1078,31 @@ function TeamPanel() {
     setErr("");
     try {
       const fd = new FormData();
-      Object.entries(form).forEach(([k, v]) => fd.append(k, v));
+      Object.entries(form).forEach(([k, v]) => {
+        if (typeof v === "string" && v.trim() === "") return;
+        fd.append(k, v);
+      });
       const f = fileRef.current?.files?.[0];
-      if (f) fd.append("image", f);
+      if (!f) {
+        setErr("Please upload a member photo.");
+        return;
+      }
+      if (f.size > MAX_UPLOAD_BYTES) {
+        setErr(
+          `Image is too large (${fmtBytes(f.size)}). Please upload an image under ${fmtBytes(MAX_UPLOAD_BYTES)}.`,
+        );
+        return;
+      }
+      fd.append("image", f);
       await teamService.create(fd);
       setModal(false);
-      setForm({ name: "", role: "" });
+      setForm({
+        name: "",
+        role: "",
+        linkedin_url: "",
+        x_url: "",
+        instagram_url: "",
+      });
       if (fileRef.current) fileRef.current.value = "";
       setLoading(true);
       load();
@@ -1122,12 +1150,48 @@ function TeamPanel() {
                 placeholder="e.g. Chairperson"
               />
             </Field>
-            <Field label="Photo (optional)">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Field label="LinkedIn (optional)">
+                <input
+                  className={inp}
+                  type="url"
+                  value={form.linkedin_url}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, linkedin_url: e.target.value }))
+                  }
+                  placeholder="https://linkedin.com/in/…"
+                />
+              </Field>
+              <Field label="X / Twitter (optional)">
+                <input
+                  className={inp}
+                  type="url"
+                  value={form.x_url}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, x_url: e.target.value }))
+                  }
+                  placeholder="https://x.com/…"
+                />
+              </Field>
+              <Field label="Instagram (optional)">
+                <input
+                  className={inp}
+                  type="url"
+                  value={form.instagram_url}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, instagram_url: e.target.value }))
+                  }
+                  placeholder="https://instagram.com/…"
+                />
+              </Field>
+            </div>
+            <Field label="Photo *">
               <input
                 type="file"
                 ref={fileRef}
                 accept="image/*"
                 className="text-sm text-gray-600"
+                required
               />
             </Field>
             <div className="flex gap-2 pt-1">
