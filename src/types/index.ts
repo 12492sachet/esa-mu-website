@@ -69,6 +69,7 @@ export interface TeamMember {
   profile_image: string
   twitter_url?: string
   linkedin_url?: string
+  instagram_url?: string
   sort_order: number
 }
 

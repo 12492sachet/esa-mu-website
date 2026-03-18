@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { teamService, galleryService, galleryService as gs, cmsService } from '../services/api'
 import { TeamMember, GalleryImage, GalleryCategory } from '../types'
+import { FaInstagram, FaLinkedinIn, FaXTwitter } from 'react-icons/fa6'
 
 function Skeleton({ className = '' }: { className?: string }) {
   return <div className={`animate-pulse bg-gray-100 ${className}`} />
@@ -79,9 +80,6 @@ export function AboutPage() {
   )
 }
 
-// ─── Team ─────────────────────────────────────────────────────────
-const AVATAR_COLORS = ['#8B1A1A','#1e40af','#065f46','#7c3aed','#b45309','#0e7490','#166534','#9d174d']
-
 export function TeamPage() {
   const [members,  setMembers]  = useState<TeamMember[]>([])
   const [loading,  setLoading]  = useState(true)
@@ -108,44 +106,78 @@ export function TeamPage() {
 
       <div className="max-w-7xl mx-auto px-6 py-14">
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-gray-100">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {Array(8).fill(0).map((_, i) => (
-              <div key={i} className="bg-white p-8 space-y-3 text-center">
-                <Skeleton className="w-14 h-14 mx-auto" />
+              <div key={i} className="bg-white border border-gray-100 overflow-hidden">
+                <Skeleton className="h-56 w-full" />
+                <div className="p-7 space-y-3 text-center">
                 <Skeleton className="h-4 w-32 mx-auto" />
                 <Skeleton className="h-3 w-20 mx-auto" />
+                </div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-gray-100">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {members.map((member, i) => (
-              <div key={member.id} className="bg-white p-8 text-center hover:bg-gray-50 transition-colors group">
-                {member.profile_image
-                  ? <img src={`/api/storage/uploads/${member.profile_image}`} alt={member.name}
-                      className="w-14 h-14 object-cover mx-auto mb-4 group-hover:scale-105 transition-transform" />
-                  : (
-                    <div className="w-14 h-14 flex items-center justify-center mx-auto mb-4 font-display text-xl font-black text-white group-hover:scale-105 transition-transform"
-                      style={{ backgroundColor: AVATAR_COLORS[i % AVATAR_COLORS.length] }}>
-                      {member.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
-                    </div>
-                  )
-                }
-                <p className="font-display font-bold text-gray-900 mb-1 tracking-tight">{member.name}</p>
-                <p className="font-mono text-[10px] text-crimson-700 uppercase tracking-wider mb-1">{member.role}</p>
-                <div className="flex justify-center gap-2 mt-4">
-                  {member.twitter_url && (
-                    <a href={member.twitter_url} target="_blank" rel="noopener noreferrer"
-                      className="w-7 h-7 bg-gray-950 flex items-center justify-center hover:bg-crimson-800 transition-colors">
-                      <svg className="w-3 h-3 text-gray-400" fill="currentColor" viewBox="0 0 24 24"><path d="M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 01-1.93.07 4.28 4.28 0 004 2.98 8.521 8.521 0 01-5.33 1.84c-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21 16 21 20.33 14.46 20.33 8.79c0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23z"/></svg>
-                    </a>
+              <div
+                key={member.id}
+                className="bg-white overflow-hidden rounded-2xl shadow-lg border border-gray-100"
+              >
+                <div className="h-72 bg-gray-100 overflow-hidden rounded-t-2xl">
+                  {member.profile_image ? (
+                    <img
+                      src={`/api/storage/uploads/${member.profile_image}`}
+                      alt={member.name}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-full h-full" />
                   )}
-                  {member.linkedin_url && (
-                    <a href={member.linkedin_url} target="_blank" rel="noopener noreferrer"
-                      className="w-7 h-7 bg-gray-950 flex items-center justify-center hover:bg-crimson-800 transition-colors">
-                      <svg className="w-3 h-3 text-gray-400" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-                    </a>
-                  )}
+                </div>
+
+                <div className="p-8 text-center">
+                  <p className="font-display font-black text-gray-900 tracking-tight text-2xl">
+                    {member.name}
+                  </p>
+                  <p className="text-gray-500 text-base mt-2">{member.role}</p>
+
+                  <div className="flex justify-center gap-5 mt-8 text-gray-900">
+                    {member.instagram_url && (
+                      <a
+                        href={member.instagram_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Instagram"
+                        className="inline-flex items-center justify-center hover:text-crimson-800 transition-colors"
+                      >
+                        <FaInstagram className="w-5 h-5" />
+                      </a>
+                    )}
+                    {member.linkedin_url && (
+                      <a
+                        href={member.linkedin_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="LinkedIn"
+                        className="inline-flex items-center justify-center hover:text-crimson-800 transition-colors"
+                      >
+                        <FaLinkedinIn className="w-5 h-5" />
+                      </a>
+                    )}
+                    {member.twitter_url && (
+                      <a
+                        href={member.twitter_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="X"
+                        className="inline-flex items-center justify-center hover:text-crimson-800 transition-colors"
+                      >
+                        <FaXTwitter className="w-5 h-5" />
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
@@ -226,7 +258,7 @@ export function GalleryPage() {
                     </div>
                 }
                 <div className="absolute inset-0 bg-crimson-900/0 group-hover:bg-crimson-900/60 transition-all flex items-end">
-                  <div className="p-3 opacity-0 group-hover:opacity-100 transition-opacity translate-y-2 group-hover:translate-y-0 transition-transform">
+                  <div className="p-3 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
                     <p className="font-mono text-[10px] text-white uppercase tracking-wider">{img.title}</p>
                     <p className="font-mono text-[9px] text-white/60 uppercase">{img.category_name}</p>
                   </div>
