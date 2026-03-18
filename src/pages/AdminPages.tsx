@@ -211,6 +211,12 @@ const inp =
 const sel =
   "w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-crimson-500 bg-white";
 
+const MAX_UPLOAD_BYTES = 2 * 1024 * 1024; // 2MB (server-friendly default)
+function fmtBytes(n: number) {
+  const mb = n / (1024 * 1024);
+  return `${mb.toFixed(mb >= 10 ? 0 : 1)} MB`;
+}
+
 function apiErr(e: unknown, fallback: string) {
   const anyE = e as any;
   const status = anyE?.response?.status;
@@ -670,6 +676,12 @@ function ProductsPanel() {
       const fd = new FormData();
       Object.entries(form).forEach(([k, v]) => fd.append(k, v));
       const f = fileRef.current?.files?.[0];
+      if (f && f.size > MAX_UPLOAD_BYTES) {
+        setErr(
+          `Image is too large (${fmtBytes(f.size)}). Please upload an image under ${fmtBytes(MAX_UPLOAD_BYTES)}.`,
+        );
+        return;
+      }
       if (f) fd.append("image", f);
       await productService.create(fd);
       setModal(false);
@@ -1295,6 +1307,12 @@ function GalleryPanel() {
         setErr("Please choose an image to upload.");
         return;
       }
+      if (f.size > MAX_UPLOAD_BYTES) {
+        setErr(
+          `Image is too large (${fmtBytes(f.size)}). Please upload an image under ${fmtBytes(MAX_UPLOAD_BYTES)}.`,
+        );
+        return;
+      }
       const fd = new FormData();
       Object.entries(form).forEach(([k, v]) => fd.append(k, v));
       fd.append("image", f);
@@ -1616,6 +1634,12 @@ function HeroPanel() {
         setErr("Please choose a slide image.");
         return;
       }
+      if (f.size > MAX_UPLOAD_BYTES) {
+        setErr(
+          `Image is too large (${fmtBytes(f.size)}). Please upload an image under ${fmtBytes(MAX_UPLOAD_BYTES)}.`,
+        );
+        return;
+      }
       const fd = new FormData();
       Object.entries(form).forEach(([k, v]) => fd.append(k, v));
       fd.append("image", f);
@@ -1812,8 +1836,16 @@ function PartnersPanel() {
       const fd = new FormData();
       fd.append("name", form.name);
       fd.append("full", form.full);
-      if (fileRef.current?.files?.[0])
-        fd.append("logo", fileRef.current.files[0]);
+      const f = fileRef.current?.files?.[0];
+      if (f) {
+        if (f.size > MAX_UPLOAD_BYTES) {
+          setErr(
+            `Logo is too large (${fmtBytes(f.size)}). Please upload an image under ${fmtBytes(MAX_UPLOAD_BYTES)}.`,
+          );
+          return;
+        }
+        fd.append("logo", f);
+      }
       await partnerService.create(fd);
       setModal(false);
       setForm({ name: "", full: "" });
