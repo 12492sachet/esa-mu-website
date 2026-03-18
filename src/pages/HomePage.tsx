@@ -85,7 +85,7 @@ function HeroSlider() {
     <section className="relative min-h-screen flex items-end overflow-hidden">
       {/* ── Static background image ── */}
       <img
-        src="/public/IMG_6351.JPG"
+        src="/IMG_6351.JPG"
         alt=""
         className="absolute inset-0 w-full h-full object-cover"
         style={{ animation: "heroImageFade 1.2s ease both" }}
@@ -94,7 +94,7 @@ function HeroSlider() {
         }}
       />
 
-      ── Slide image overlay (when admin uploads per-slide images) ──
+      {/* ── Slide image overlay (when admin uploads per-slide images) ── */}
       {slide?.image_path && (
         <img
           key={slide.image_path}
@@ -421,6 +421,35 @@ function BlogPreview() {
       .finally(() => setLoading(false));
   }, []);
 
+  const FALLBACK_POSTS: BlogPost[] = [
+    {
+      id: -1 as any,
+      title: "Innovation Week 2026: What to Expect",
+      excerpt:
+        "A quick breakdown of the agenda, workshops, and how to register early to secure your spot.",
+      content: "",
+      author_name: "ESA-MU Media Desk",
+      status: "published" as any,
+      published_at: new Date().toISOString(),
+      featured_image: "",
+      tags: [],
+    } as any,
+    {
+      id: -2 as any,
+      title: "How to Use the Exam Bank Effectively",
+      excerpt:
+        "A practical strategy for turning past papers into marks — from Y1 to Y5.",
+      content: "",
+      author_name: "Academic Committee",
+      status: "published" as any,
+      published_at: new Date(Date.now() - 86400000).toISOString(),
+      featured_image: "",
+      tags: [],
+    } as any,
+  ];
+
+  const shown = !loading && posts.length === 0 ? FALLBACK_POSTS : posts;
+
   return (
     <section className="py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-6">
@@ -469,7 +498,7 @@ function BlogPreview() {
                     </div>
                   </div>
                 ))
-            : posts.map((post, i) => (
+            : shown.map((post, i) => (
                 <Link
                   key={post.id}
                   to={`/blog/${post.id}`}
@@ -483,9 +512,11 @@ function BlogPreview() {
                         className="w-full h-full object-cover opacity-60"
                       />
                     ) : (
-                      <span className="font-mono text-4xl font-black text-gray-800 select-none">
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
+                      <img
+                        src="/IMG_6351.JPG"
+                        alt=""
+                        className="w-full h-full object-cover opacity-60"
+                      />
                     )}
                   </div>
                   <div className="p-6">

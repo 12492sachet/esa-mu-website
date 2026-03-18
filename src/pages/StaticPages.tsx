@@ -241,8 +241,23 @@ export function GalleryPage() {
             ))}
           </div>
         ) : images.length === 0 ? (
-          <div className="text-center py-24">
-            <p className="font-mono text-xs text-gray-400 uppercase tracking-widest">No images yet</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+            <div
+              className="relative overflow-hidden group cursor-pointer col-span-2 row-span-2"
+              style={{ minHeight: '280px' }}
+            >
+              <img
+                src="/IMG_6351.JPG"
+                alt="ESA-MU"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+              <div className="absolute inset-0 bg-crimson-900/0 group-hover:bg-crimson-900/50 transition-all flex items-end">
+                <div className="p-3">
+                  <p className="font-mono text-[10px] text-white uppercase tracking-wider">ESA-MU Moments</p>
+                  <p className="font-mono text-[9px] text-white/60 uppercase">Gallery</p>
+                </div>
+              </div>
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">

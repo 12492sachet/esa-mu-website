@@ -357,6 +357,37 @@ export default function EventDetailPage() {
                       >
                         Reply
                       </button>
+
+                      {replyingTo?.id === c.id && (
+                        <form onSubmit={handleReply} className="space-y-2 pt-2 border-t border-gray-100">
+                          <p className="font-mono text-[9px] uppercase tracking-widest text-gray-400">
+                            Replying to {c.name}
+                          </p>
+                          <textarea
+                            className="w-full border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-crimson-500 transition-colors"
+                            rows={2}
+                            placeholder="Write a reply…"
+                            value={replyBody}
+                            onChange={e => setReplyBody(e.target.value)}
+                          />
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="submit"
+                              disabled={!replyBody.trim()}
+                              className="flex-1 bg-gray-900 text-white py-2 font-mono text-[10px] uppercase tracking-wider hover:bg-crimson-700 disabled:opacity-60 transition-colors"
+                            >
+                              Post Reply
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setReplyingTo(null)}
+                              className="px-3 py-2 font-mono text-[10px] uppercase tracking-wider text-gray-500 hover:text-gray-800"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </form>
+                      )}
                     </div>
                   ))
               ) : (
@@ -386,36 +417,6 @@ export default function EventDetailPage() {
               {commentLoading ? 'Posting…' : 'Post Comment'}
             </button>
           </form>
-          {replyingTo && (
-            <form onSubmit={handleReply} className="space-y-2 border-t border-gray-100 pt-3">
-              <p className="font-mono text-[10px] uppercase tracking-widest text-gray-400">
-                Replying to {replyingTo.name}
-              </p>
-              <textarea
-                className="w-full border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-crimson-500 transition-colors"
-                rows={2}
-                placeholder="Write a reply…"
-                value={replyBody}
-                onChange={e => setReplyBody(e.target.value)}
-              />
-              <div className="flex items-center gap-2">
-                <button
-                  type="submit"
-                  disabled={!replyBody.trim()}
-                  className="flex-1 bg-gray-900 text-white py-2 font-mono text-[10px] uppercase tracking-wider hover:bg-crimson-700 disabled:opacity-60 transition-colors"
-                >
-                  Post Reply
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setReplyingTo(null)}
-                  className="px-3 py-2 font-mono text-[10px] uppercase tracking-wider text-gray-500 hover:text-gray-800"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          )}
         </aside>
         </div>
       </section>

@@ -27,6 +27,30 @@ export function BlogPage() {
   }, [page, search])
 
   const lastPage = Math.ceil(total / 12)
+  const FALLBACK_POSTS: BlogPost[] = [
+    {
+      id: -1 as any,
+      title: 'Innovation Week 2026: What to Expect',
+      excerpt: 'A quick breakdown of the agenda, workshops, and how to register early to secure your spot.',
+      content: 'Innovation Week is our flagship week-long event bringing together industry, alumni, and students.\n\n## Highlights\n\n1. Hands-on workshops\n2. Industry talks\n3. Project showcase\n\nSee you there!',
+      author_name: 'ESA-MU Media Desk',
+      status: 'published' as any,
+      published_at: new Date().toISOString(),
+      featured_image: '',
+      tags: [],
+    } as any,
+    {
+      id: -2 as any,
+      title: 'How to Use the Exam Bank Effectively',
+      excerpt: 'A practical strategy for turning past papers into marks — from Y1 to Y5.',
+      content: 'Past papers are most powerful when you use them like a feedback tool.\n\n## A simple workflow\n\n1. Attempt under time\n2. Mark strictly\n3. Review weak topics\n4. Repeat weekly\n\nConsistency wins.',
+      author_name: 'Academic Committee',
+      status: 'published' as any,
+      published_at: new Date(Date.now() - 86400000).toISOString(),
+      featured_image: '',
+      tags: [],
+    } as any,
+  ]
 
   return (
     <main className="pt-20 min-h-screen bg-white">
@@ -69,6 +93,26 @@ export function BlogPage() {
               </div>
             ))}
           </div>
+        ) : (posts.length === 0 && !search) ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-gray-100">
+            {FALLBACK_POSTS.map((post, i) => (
+              <Link key={post.id} to={`/blog/${post.id}`} className="bg-white group hover:-translate-y-1 transition-transform duration-200 block">
+                <div className="h-44 bg-gray-950 flex items-center justify-center relative border-b-2 border-crimson-700 overflow-hidden">
+                  <img src="/IMG_6351.JPG" alt="" className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-300" />
+                </div>
+                <div className="p-6">
+                  <h3 className="font-display font-bold text-base text-gray-900 leading-snug mb-2 group-hover:text-crimson-800 transition-colors">
+                    {post.title}
+                  </h3>
+                  <p className="text-xs text-gray-500 leading-relaxed mb-4">{post.excerpt}</p>
+                  <div className="flex justify-between items-center font-mono text-[10px] text-gray-400 pt-3 border-t border-gray-100">
+                    <span>{post.author_name}</span>
+                    <span>{new Date(post.published_at).toLocaleDateString('en-KE', { day:'numeric', month:'short', year:'numeric' })}</span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
         ) : posts.length === 0 ? (
           <div className="text-center py-24">
             <p className="font-mono text-xs text-gray-400 uppercase tracking-widest">No posts found</p>
@@ -81,9 +125,7 @@ export function BlogPage() {
                   {post.featured_image
                     ? <img src={`/api/storage/uploads/${post.featured_image}`} alt={post.title}
                         className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-300" />
-                    : <span className="font-mono text-5xl font-black text-gray-800 select-none">
-                        {String(i + 1).padStart(2, '0')}
-                      </span>
+                    : <img src="/IMG_6351.JPG" alt="" className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-300" />
                   }
                 </div>
                 <div className="p-6">

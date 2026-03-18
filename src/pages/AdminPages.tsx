@@ -2186,8 +2186,16 @@ function ProjectsPanel() {
                     </td>
                   </tr>
                 ))
-            : (projects as Record<string, any>[]).map((p) => (
-                <tr key={p.id} className="hover:bg-gray-50">
+            : (projects as Record<string, any>[]).map((p) => {
+                const s = String(p.status ?? "pending").toLowerCase();
+                const rowCls =
+                  s === "approved" || s === "published"
+                    ? "bg-emerald-50 hover:bg-emerald-100"
+                    : s === "rejected"
+                      ? "bg-red-50 hover:bg-red-100"
+                      : "hover:bg-gray-50";
+                return (
+                <tr key={p.id} className={rowCls}>
                   <Td>
                     <div className="flex flex-col">
                       <span className="font-medium">{p.title}</span>
@@ -2232,7 +2240,8 @@ function ProjectsPanel() {
                     </div>
                   </Td>
                 </tr>
-              ))}
+                );
+              })}
         </tbody>
       </table>
     </div>
