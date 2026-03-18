@@ -2068,6 +2068,8 @@ function EventsPanel() {
             <Th>Date</Th>
             <Th>Category</Th>
             <Th>Location</Th>
+            <Th>Likes</Th>
+            <Th>Comments</Th>
             <Th>Actions</Th>
           </tr>
         </thead>
@@ -2096,6 +2098,8 @@ function EventsPanel() {
                     <StatusBadge s={String(ev.category ?? "Other")} />
                   </Td>
                   <Td>{ev.location ?? "—"}</Td>
+                  <Td mono>{ev.likes_count ?? 0}</Td>
+                  <Td mono>{ev.comments_count ?? 0}</Td>
                   <Td>
                     <ActBtns onDelete={() => del(Number(ev.id))} />
                   </Td>

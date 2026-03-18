@@ -128,6 +128,10 @@ export const eventService = {
   comment: (id: number, payload: { name: string; body: string }) =>
     api.post(`/events/${id}/comments`, payload),
   getComments: (id: number) => api.get(`/events/${id}/comments`),
+  likeComment: (eventId: number, commentId: number) =>
+    api.post(`/events/${eventId}/comments/${commentId}/like`),
+  replyToComment: (eventId: number, commentId: number, payload: { name: string; body: string }) =>
+    api.post(`/events/${eventId}/comments/${commentId}/replies`, payload),
 }
 
 export const projectService = {

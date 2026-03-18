@@ -8,6 +8,8 @@ interface EventComment {
   name: string
   body: string
   created_at: string
+  likes_count?: number
+  replies?: EventComment[]
 }
 
 interface EventDetail {
@@ -32,6 +34,8 @@ export default function EventDetailPage() {
   const [likeLoading, setLikeLoading] = useState(false)
   const [commentBody, setCommentBody] = useState('')
   const [commentLoading, setCommentLoading] = useState(false)
+  const [replyingTo, setReplyingTo] = useState<EventComment | null>(null)
+  const [replyBody, setReplyBody] = useState('')
 
   useEffect(() => {
     if (!id) return
@@ -88,6 +92,65 @@ export default function EventDetailPage() {
     }
   }
 
+  const handleLikeComment = async (commentId: number) => {
+    if (!id) return
+    try {
+      await eventService.likeComment(Number(id), commentId)
+      setEvent(prev => prev
+        ? {
+            ...prev,
+            comments: (prev.comments ?? []).map(c =>
+              c.id === commentId
+                ? { ...c, likes_count: (c.likes_count ?? 0) + 1 }
+                : c
+            ),
+          }
+        : prev)
+    } catch {
+      // ignore errors for now
+    }
+  }
+
+  const handleReply = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!id || !replyingTo || !replyBody.trim()) return
+    try {
+      const name = user?.name ?? 'Student'
+      await eventService.replyToComment(Number(id), replyingTo.id, {
+        name,
+        body: replyBody.trim(),
+      })
+      // optimistic local update (flat replies list)
+      setEvent(prev =>
+        prev
+          ? {
+              ...prev,
+              comments: (prev.comments ?? []).map(c =>
+                c.id === replyingTo.id
+                  ? {
+                      ...c,
+                      replies: [
+                        ...(c.replies ?? []),
+                        {
+                          id: Date.now(),
+                          name,
+                          body: replyBody.trim(),
+                          created_at: new Date().toISOString(),
+                        },
+                      ],
+                    }
+                  : c
+              ),
+            }
+          : prev
+      )
+      setReplyBody('')
+      setReplyingTo(null)
+    } catch {
+      // ignore for now
+    }
+  }
+
   if (loading) {
     return (
       <main className="min-h-screen bg-white pt-24 px-6">
@@ -137,15 +200,17 @@ export default function EventDetailPage() {
         <div className="mt-4 grid gap-8 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] md:items-start">
           {/* Left: media + main content (stacks like Instagram on mobile) */}
           <article className="bg-white border border-gray-100">
-            {event.image_path && (
-              <div className="w-full bg-black/5">
-                <img
-                  src={`/api/storage/uploads/${event.image_path}`}
-                  alt={event.title}
-                  className="w-full max-h-[420px] object-cover md:object-contain bg-black"
-                />
-              </div>
-            )}
+            <div className="w-full bg-black/5">
+              <img
+                src={
+                  event.image_path
+                    ? `/api/storage/uploads/${event.image_path}`
+                    : '/esamu-logo.jpeg'
+                }
+                alt={event.title}
+                className="w-full max-h-[420px] object-cover md:object-contain bg-black"
+              />
+            </div>
 
             <div className="p-4 border-t border-gray-100 space-y-3">
               {/* Title + meta */}
@@ -201,6 +266,30 @@ export default function EventDetailPage() {
                     {likeLoading ? 'Liking…' : `Like · ${event.likes_count ?? 0}`}
                   </span>
                 </button>
+                {/* Share actions */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const url = window.location.href
+                    const text = `${event.title} — ${event.description?.slice(0, 120) ?? ''}`
+                    if (navigator.share) {
+                      navigator
+                        .share({ title: event.title, text, url })
+                        .catch(() => {})
+                    } else {
+                      const wa = `https://wa.me/?text=${encodeURIComponent(`${event.title}\n${url}`)}`
+                      window.open(wa, '_blank')
+                    }
+                  }}
+                  className="inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-widest text-gray-500 hover:text-gray-900"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                    <path d="M4 12v7a1 1 0 001 1h14a1 1 0 001-1v-7" />
+                    <polyline points="16 6 12 2 8 6" />
+                    <line x1="12" y1="2" x2="12" y2="16" />
+                  </svg>
+                  Share
+                </button>
               </div>
 
               {/* Description / caption */}
@@ -222,14 +311,52 @@ export default function EventDetailPage() {
                   .slice()
                   .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
                   .map((c) => (
-                    <div key={c.id} className="bg-white border border-gray-100 p-3">
-                      <p className="font-mono text-[10px] uppercase tracking-wider text-gray-500 mb-1">
-                        {c.name}{' '}
-                        <span className="text-gray-400">
-                          · {new Date(c.created_at).toLocaleDateString('en-KE', { day: 'numeric', month: 'short' })}
-                        </span>
-                      </p>
+                    <div key={c.id} className="bg-white border border-gray-100 p-3 space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="font-mono text-[10px] uppercase tracking-wider text-gray-500">
+                          {c.name}{' '}
+                          <span className="text-gray-400">
+                            · {new Date(c.created_at).toLocaleDateString('en-KE', { day: 'numeric', month: 'short' })}
+                          </span>
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => handleLikeComment(c.id)}
+                          className="inline-flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider text-gray-400 hover:text-crimson-600"
+                        >
+                          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 21s-5-3.33-8-6.64C2 12.35 2 9.5 4 7.5 5-3.5 9 6 12 9c3-3 7-6.5 8-1.5 2 2 2 4.85 0 6.86C17 17.67 12 21 12 21z" />
+                          </svg>
+                          <span>{c.likes_count ?? 0}</span>
+                        </button>
+                      </div>
                       <p className="text-xs text-gray-700 leading-relaxed">{c.body}</p>
+                      {/* Replies */}
+                      {c.replies && c.replies.length > 0 && (
+                        <div className="mt-2 space-y-1 pl-3 border-l border-gray-100">
+                          {c.replies.map(r => (
+                            <div key={r.id}>
+                              <p className="font-mono text-[9px] uppercase tracking-wider text-gray-500">
+                                {r.name}{' '}
+                                <span className="text-gray-400">
+                                  · {new Date(r.created_at).toLocaleDateString('en-KE', { day: 'numeric', month: 'short' })}
+                                </span>
+                              </p>
+                              <p className="text-[11px] text-gray-700 leading-relaxed">{r.body}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setReplyingTo(c)
+                          setReplyBody('')
+                        }}
+                        className="font-mono text-[9px] uppercase tracking-wider text-gray-400 hover:text-crimson-600"
+                      >
+                        Reply
+                      </button>
                     </div>
                   ))
               ) : (
@@ -259,6 +386,36 @@ export default function EventDetailPage() {
               {commentLoading ? 'Posting…' : 'Post Comment'}
             </button>
           </form>
+          {replyingTo && (
+            <form onSubmit={handleReply} className="space-y-2 border-t border-gray-100 pt-3">
+              <p className="font-mono text-[10px] uppercase tracking-widest text-gray-400">
+                Replying to {replyingTo.name}
+              </p>
+              <textarea
+                className="w-full border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-crimson-500 transition-colors"
+                rows={2}
+                placeholder="Write a reply…"
+                value={replyBody}
+                onChange={e => setReplyBody(e.target.value)}
+              />
+              <div className="flex items-center gap-2">
+                <button
+                  type="submit"
+                  disabled={!replyBody.trim()}
+                  className="flex-1 bg-gray-900 text-white py-2 font-mono text-[10px] uppercase tracking-wider hover:bg-crimson-700 disabled:opacity-60 transition-colors"
+                >
+                  Post Reply
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setReplyingTo(null)}
+                  className="px-3 py-2 font-mono text-[10px] uppercase tracking-wider text-gray-500 hover:text-gray-800"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          )}
         </aside>
         </div>
       </section>
