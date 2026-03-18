@@ -489,7 +489,7 @@ function BlogPreview() {
                     )}
                   </div>
                   <div className="p-6">
-                    {post.tags?.length > 0 && (
+                    {post.tags && post.tags.length > 0 && (
                       <div className="flex gap-2 mb-3">
                         {post.tags.slice(0, 2).map((t) => (
                           <span

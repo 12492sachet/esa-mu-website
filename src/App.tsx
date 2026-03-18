@@ -10,7 +10,9 @@ import { CartPage, CheckoutPage } from './pages/CartCheckoutPage'
 import { BlogPage, BlogPostPage } from './pages/BlogPage'
 import { AboutPage, TeamPage, GalleryPage, ContactPage } from './pages/StaticPages'
 import { AdminLoginPage, AdminDashboardPage } from './pages/AdminPages'
-import DepartmentPage, { DepartmentCards } from './pages/DepartmentsPage'
+import EventsPage from './pages/EventsPage'
+import StudentProjectsPage from './pages/StudentProjectsPage'
+import DepartmentPage from './pages/DepartmentsPage'
 
 // Layout wrapper for public pages (with Navbar + Footer)
 function PublicLayout() {
@@ -38,6 +40,8 @@ export default function App() {
               <Route path="/blog"                  element={<BlogPage />} />
               <Route path="/blog/:id"              element={<BlogPostPage />} />
               <Route path="/exam-bank"             element={<ExamBankPage />} />
+              <Route path="/events"                element={<EventsPage />} />
+              <Route path="/projects"              element={<StudentProjectsPage />} />
               <Route path="/marketplace"           element={<MarketplacePage />} />
               <Route path="/marketplace/cart"      element={<CartPage />} />
               <Route path="/marketplace/checkout"  element={<CheckoutPage />} />

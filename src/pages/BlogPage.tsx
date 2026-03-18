@@ -87,7 +87,7 @@ export function BlogPage() {
                   }
                 </div>
                 <div className="p-6">
-                  {post.tags?.length > 0 && (
+                  {post.tags && post.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 mb-3">
                       {post.tags.slice(0, 2).map(t => (
                         <span key={t.id} className="font-mono text-[9px] text-crimson-700 border border-crimson-200 px-2 py-0.5 uppercase tracking-wider">
@@ -175,7 +175,7 @@ export function BlogPostPage() {
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
             Back to Blog
           </Link>
-          {post.tags?.length > 0 && (
+          {post.tags && post.tags.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mb-4">
               {post.tags.map(t => (
                 <span key={t.id} className="font-mono text-[9px] text-crimson-500 border border-crimson-800/50 px-2 py-0.5 uppercase tracking-wider">

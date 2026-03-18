@@ -12,6 +12,8 @@ import {
   cmsService,
   heroService,
   partnerService,
+  eventService,
+  adminProjectService,
 } from "../services/api";
 
 // ─── Admin Login ──────────────────────────────────────────────────
@@ -195,6 +197,7 @@ function ActBtns({
 function AddBtn({ label, onClick }: { label: string; onClick?: () => void }) {
   return (
     <button
+      type="button"
       onClick={onClick}
       className="font-mono text-[10px] uppercase tracking-wider px-4 py-2 bg-gray-950 text-white hover:bg-crimson-800 transition-colors"
     >
@@ -1872,6 +1875,364 @@ function HeroPanel() {
   );
 }
 
+// ─── Events Panel ─────────────────────────────────────────────────
+function EventsPanel() {
+  const [events, setEvents] = useState<unknown[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [modal, setModal] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState("");
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [form, setForm] = useState({
+    title: "",
+    description: "",
+    category: "Other",
+    location: "",
+    event_date: "",
+    event_time: "",
+  });
+
+  const load = () => {
+    setLoading(true);
+    eventService
+      .getAll()
+      .then((r) => setEvents(r.data.data ?? []))
+      .catch(() => setEvents([]))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setErr("");
+    try {
+      const fd = new FormData();
+      Object.entries(form).forEach(([k, v]) => {
+        if (typeof v === "string" && v.trim() === "") return;
+        fd.append(k, v);
+      });
+      const f = fileRef.current?.files?.[0];
+      if (f) {
+        if (f.size > MAX_UPLOAD_BYTES) {
+          setErr(
+            `Image is too large (${fmtBytes(f.size)}). Please upload an image under ${fmtBytes(MAX_UPLOAD_BYTES)}.`,
+          );
+          return;
+        }
+        fd.append("image", f);
+      }
+      await eventService.create(fd);
+      setModal(false);
+      setForm({
+        title: "",
+        description: "",
+        category: "Other",
+        location: "",
+        event_date: "",
+        event_time: "",
+      });
+      if (fileRef.current) fileRef.current.value = "";
+      load();
+    } catch (e2: unknown) {
+      setErr(apiErr(e2, "Failed to create event."));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const del = async (id: number) => {
+    if (!confirm("Delete this event?")) return;
+    await eventService.delete(id).catch(() => {});
+    load();
+  };
+
+  const CATS = ["Academic", "Social", "Sports", "Career", "Workshop", "Other"];
+
+  return (
+    <div>
+      {modal && (
+        <Modal title="Create Event" onClose={() => setModal(false)}>
+          <form onSubmit={submit} className="space-y-4">
+            {err && (
+              <p className="text-red-500 text-xs font-mono bg-red-50 p-2">
+                {err}
+              </p>
+            )}
+            <Field label="Title *">
+              <input
+                className={inp}
+                value={form.title}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, title: e.target.value }))
+                }
+                required
+                placeholder="e.g. Innovation Week — Day 1"
+              />
+            </Field>
+            <Field label="Description *">
+              <textarea
+                className={inp}
+                rows={5}
+                value={form.description}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, description: e.target.value }))
+                }
+                required
+                placeholder="Short event overview…"
+              />
+            </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Category *">
+                <select
+                  className={sel}
+                  value={form.category}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, category: e.target.value }))
+                  }
+                >
+                  {CATS.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Location *">
+                <input
+                  className={inp}
+                  value={form.location}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, location: e.target.value }))
+                  }
+                  required
+                  placeholder="e.g. Main Hall"
+                />
+              </Field>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Date *">
+                <input
+                  className={inp}
+                  type="date"
+                  value={form.event_date}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, event_date: e.target.value }))
+                  }
+                  required
+                />
+              </Field>
+              <Field label="Time (optional)">
+                <input
+                  className={inp}
+                  value={form.event_time}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, event_time: e.target.value }))
+                  }
+                  placeholder="e.g. 2:00 PM"
+                />
+              </Field>
+            </div>
+            <Field label="Cover Image (optional)">
+              <input
+                type="file"
+                ref={fileRef}
+                accept="image/*"
+                className="text-sm text-gray-600"
+              />
+            </Field>
+            <div className="flex gap-2 pt-1">
+              <SaveBtn saving={saving} label="Create Event" />
+              <CancelBtn onClick={() => setModal(false)} />
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      <div className="flex justify-between items-center mb-5">
+        <p className="font-display text-xl font-black text-gray-900 tracking-tight">
+          Events
+        </p>
+        <AddBtn label="+ Create Event" onClick={() => setModal(true)} />
+      </div>
+
+      <table className="w-full bg-white border border-gray-100">
+        <thead>
+          <tr>
+            <Th>Title</Th>
+            <Th>Date</Th>
+            <Th>Category</Th>
+            <Th>Location</Th>
+            <Th>Actions</Th>
+          </tr>
+        </thead>
+        <tbody>
+          {loading
+            ? Array(4)
+                .fill(0)
+                .map((_, i) => (
+                  <tr key={i}>
+                    <td colSpan={5} className="px-4 py-3">
+                      <Skeleton className="h-4 w-full" />
+                    </td>
+                  </tr>
+                ))
+            : (events as Record<string, any>[]).map((ev) => (
+                <tr key={ev.id} className="hover:bg-gray-50">
+                  <Td>
+                    <span className="font-medium">{ev.title}</span>
+                  </Td>
+                  <Td mono>
+                    {ev.event_date
+                      ? new Date(ev.event_date).toLocaleDateString("en-KE")
+                      : "—"}
+                  </Td>
+                  <Td>
+                    <StatusBadge s={String(ev.category ?? "Other")} />
+                  </Td>
+                  <Td>{ev.location ?? "—"}</Td>
+                  <Td>
+                    <ActBtns onDelete={() => del(Number(ev.id))} />
+                  </Td>
+                </tr>
+              ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// ─── Student Projects (Admin Review) ───────────────────────────────
+function ProjectsPanel() {
+  const [projects, setProjects] = useState<unknown[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState("");
+
+  const load = () => {
+    setLoading(true);
+    setErr("");
+    adminProjectService
+      .getAll()
+      .then((r) => setProjects(r.data.data ?? []))
+      .catch((e: unknown) => setErr(apiErr(e, "Failed to load projects.")))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  const approve = async (id: number) => {
+    await adminProjectService.approve(id).catch(() => {});
+    load();
+  };
+  const reject = async (id: number) => {
+    await adminProjectService.reject(id).catch(() => {});
+    load();
+  };
+  const del = async (id: number) => {
+    if (!confirm("Delete this project submission?")) return;
+    await adminProjectService.delete(id).catch(() => {});
+    load();
+  };
+
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-5">
+        <p className="font-display text-xl font-black text-gray-900 tracking-tight">
+          Student Projects (Review)
+        </p>
+        <AddBtn label="Refresh" onClick={load} />
+      </div>
+
+      {err && (
+        <div className="mb-4 bg-red-50 border border-red-100 p-3">
+          <p className="text-red-600 text-xs font-mono">{err}</p>
+          <p className="text-gray-500 text-xs font-mono mt-1">
+            If your backend doesn’t have `/admin/projects`, I can adjust this
+            panel to match your exact endpoints.
+          </p>
+        </div>
+      )}
+
+      <table className="w-full bg-white border border-gray-100">
+        <thead>
+          <tr>
+            <Th>Project</Th>
+            <Th>Student</Th>
+            <Th>Dept</Th>
+            <Th>Year</Th>
+            <Th>Status</Th>
+            <Th>Actions</Th>
+          </tr>
+        </thead>
+        <tbody>
+          {loading
+            ? Array(4)
+                .fill(0)
+                .map((_, i) => (
+                  <tr key={i}>
+                    <td colSpan={6} className="px-4 py-3">
+                      <Skeleton className="h-4 w-full" />
+                    </td>
+                  </tr>
+                ))
+            : (projects as Record<string, any>[]).map((p) => (
+                <tr key={p.id} className="hover:bg-gray-50">
+                  <Td>
+                    <div className="flex flex-col">
+                      <span className="font-medium">{p.title}</span>
+                      <span className="text-xs text-gray-400 line-clamp-1">
+                        {p.tech_stack || "—"}
+                      </span>
+                    </div>
+                  </Td>
+                  <Td>
+                    <div className="flex flex-col">
+                      <span className="text-sm">{p.student_name}</span>
+                      <span className="font-mono text-[10px] text-gray-400">
+                        {p.student_reg}
+                      </span>
+                    </div>
+                  </Td>
+                  <Td mono>{p.department ?? "—"}</Td>
+                  <Td mono>{p.year_of_study ?? "—"}</Td>
+                  <Td>
+                    <StatusBadge s={String(p.status ?? "pending")} />
+                  </Td>
+                  <Td>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => approve(Number(p.id))}
+                        className="font-mono text-[9px] uppercase tracking-wider px-3 py-1.5 border border-emerald-200 text-emerald-700 hover:bg-emerald-50 transition-colors"
+                      >
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => reject(Number(p.id))}
+                        className="font-mono text-[9px] uppercase tracking-wider px-3 py-1.5 border border-amber-200 text-amber-700 hover:bg-amber-50 transition-colors"
+                      >
+                        Reject
+                      </button>
+                      <button
+                        onClick={() => del(Number(p.id))}
+                        className="font-mono text-[9px] uppercase tracking-wider px-3 py-1.5 border border-red-200 text-red-600 hover:bg-red-50 transition-colors"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </Td>
+                </tr>
+              ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 // ─── Main Admin Dashboard ─────────────────────────────────────────
 // ─── Partners Panel ──────────────────────────────────────────────
 function PartnersPanel() {
@@ -2052,6 +2413,8 @@ function PartnersPanel() {
 
 type Panel =
   | "dashboard"
+  | "events"
+  | "projects"
   | "exams"
   | "products"
   | "blog"
@@ -2064,6 +2427,8 @@ type Panel =
 
 const PANELS: Record<Panel, React.ReactNode> = {
   dashboard: <DashboardPanel />,
+  events: <EventsPanel />,
+  projects: <ProjectsPanel />,
   exams: <ExamsPanel />,
   products: <ProductsPanel />,
   blog: <BlogPanel />,
@@ -2107,6 +2472,32 @@ const NAV_ITEMS = [
       <>
         <rect x="1" y="5" width="22" height="14" rx="2" />
         <circle cx="6" cy="10" r="2" />
+      </>
+    ),
+  },
+  {
+    id: "events" as Panel,
+    label: "Events",
+    group: "Community",
+    icon: (
+      <>
+        <rect x="3" y="4" width="18" height="18" rx="2" />
+        <line x1="8" y1="2.5" x2="8" y2="6" />
+        <line x1="16" y1="2.5" x2="16" y2="6" />
+        <line x1="3" y1="10" x2="21" y2="10" />
+      </>
+    ),
+  },
+  {
+    id: "projects" as Panel,
+    label: "Student Projects",
+    group: "Community",
+    icon: (
+      <>
+        <path d="M3 7h18" />
+        <path d="M7 7v14" />
+        <path d="M3 7l2-4h14l2 4" />
+        <rect x="7" y="11" width="14" height="10" rx="2" />
       </>
     ),
   },

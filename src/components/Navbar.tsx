@@ -9,6 +9,8 @@ const NAV_ITEMS = [
   { label: 'Team',        to: '/team',      matchPrefix: '' },
   { label: 'Gallery',     to: '/gallery',   matchPrefix: '' },
   { label: 'Exam Bank',   to: '/exam-bank', matchPrefix: '' },
+  { label: 'Events',      to: '/events',    matchPrefix: '' },
+  { label: 'Projects',    to: '/projects',  matchPrefix: '' },
   { label: 'Blog',        to: '/blog',      matchPrefix: '' },
   { label: 'Marketplace', to: '/marketplace', matchPrefix: '' },
   { label: 'Contact',     to: '/contact',   matchPrefix: '' },

@@ -116,6 +116,29 @@ export const adminService = {
   getStats: () => api.get('/admin/stats'),
 }
 
+export const eventService = {
+  getAll: (params?: Record<string, string>) => api.get('/events', { params }),
+  getOne: (id: number) => api.get(`/events/${id}`),
+  create: (data: FormData) =>
+    api.post('/admin/events', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  update: (id: number, data: FormData) =>
+    api.post(`/admin/events/${id}`, data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  delete: (id: number) => api.delete(`/admin/events/${id}`),
+}
+
+export const projectService = {
+  getAll: (params?: Record<string, string>) => api.get('/projects', { params }),
+  create: (data: FormData) =>
+    api.post('/projects', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+}
+
+export const adminProjectService = {
+  getAll: (params?: Record<string, string>) => api.get('/admin/projects', { params }),
+  approve: (id: number) => api.post(`/admin/projects/${id}/approve`),
+  reject: (id: number) => api.post(`/admin/projects/${id}/reject`),
+  delete: (id: number) => api.delete(`/admin/projects/${id}`),
+}
+
 export function downloadBlob(blob: Blob, filename: string) {
   const url = window.URL.createObjectURL(blob)
   const a   = document.createElement('a')
