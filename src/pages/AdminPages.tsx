@@ -206,6 +206,89 @@ function Skeleton({ className = "" }: { className?: string }) {
   return <div className={`animate-pulse bg-gray-100 ${className}`} />;
 }
 
+const inp =
+  "w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-crimson-500 transition-colors";
+const sel =
+  "w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-crimson-500 bg-white";
+
+function Modal({
+  title,
+  onClose,
+  children,
+}: {
+  title: string;
+  onClose: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 py-6">
+      <div className="bg-white w-full max-w-xl max-h-[92vh] overflow-y-auto">
+        <div className="sticky top-0 bg-white flex items-center justify-between px-6 py-4 border-b border-gray-100 z-10">
+          <p className="font-display font-black text-gray-900 tracking-tight">
+            {title}
+          </p>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-700 text-2xl font-bold leading-none"
+            aria-label="Close"
+            type="button"
+          >
+            ×
+          </button>
+        </div>
+        <div className="px-6 py-5">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label className="block font-mono text-[9px] uppercase tracking-widest text-gray-500 mb-1.5">
+        {label}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+function SaveBtn({
+  saving,
+  label,
+}: {
+  saving: boolean;
+  label: string;
+}) {
+  return (
+    <button
+      type="submit"
+      disabled={saving}
+      className="flex-1 bg-crimson-800 text-white py-3 font-mono text-xs uppercase tracking-wider hover:bg-crimson-700 disabled:opacity-60 transition-colors"
+    >
+      {saving ? "Saving…" : `${label} →`}
+    </button>
+  );
+}
+
+function CancelBtn({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="px-5 border border-gray-200 font-mono text-xs text-gray-600 hover:bg-gray-50"
+    >
+      Cancel
+    </button>
+  );
+}
+
 // ─── Dashboard Panel ──────────────────────────────────────────────
 function DashboardPanel() {
   const [stats, setStats] = useState<Record<string, number>>({});
@@ -310,6 +393,17 @@ function DashboardPanel() {
 function ExamsPanel() {
   const [exams, setExams] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(true);
+  const [modal, setModal] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState("");
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [form, setForm] = useState({
+    title: "",
+    type: "CAT",
+    subject: "",
+    year_of_study: "Y1",
+    semester: "S1",
+  });
   const load = () => {
     examService
       .getAll()
@@ -320,6 +414,38 @@ function ExamsPanel() {
   useEffect(() => {
     load();
   }, []);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setErr("");
+    try {
+      const fd = new FormData();
+      Object.entries(form).forEach(([k, v]) => fd.append(k, v));
+      const f = fileRef.current?.files?.[0];
+      if (!f) {
+        setErr("Please choose a PDF file.");
+        return;
+      }
+      fd.append("pdf", f);
+      await examService.create(fd);
+      setModal(false);
+      setForm({
+        title: "",
+        type: "CAT",
+        subject: "",
+        year_of_study: "Y1",
+        semester: "S1",
+      });
+      if (fileRef.current) fileRef.current.value = "";
+      setLoading(true);
+      load();
+    } catch {
+      setErr("Failed to upload exam PDF.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const del = async (id: number) => {
     if (!confirm("Delete this exam?")) return;
@@ -335,11 +461,106 @@ function ExamsPanel() {
 
   return (
     <div>
+      {modal && (
+        <Modal title="Upload Exam PDF" onClose={() => setModal(false)}>
+          <form onSubmit={submit} className="space-y-4">
+            {err && (
+              <p className="text-red-500 text-xs font-mono bg-red-50 p-2">
+                {err}
+              </p>
+            )}
+            <Field label="Title *">
+              <input
+                className={inp}
+                value={form.title}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, title: e.target.value }))
+                }
+                required
+                placeholder="e.g. Thermodynamics CAT 1"
+              />
+            </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Type *">
+                <select
+                  className={sel}
+                  value={form.type}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, type: e.target.value }))
+                  }
+                >
+                  {["CAT", "Main", "Assignment"].map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Semester *">
+                <select
+                  className={sel}
+                  value={form.semester}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, semester: e.target.value }))
+                  }
+                >
+                  {["S1", "S2", "S3"].map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Subject / Unit *">
+                <input
+                  className={inp}
+                  value={form.subject}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, subject: e.target.value }))
+                  }
+                  required
+                  placeholder="e.g. ENG 310"
+                />
+              </Field>
+              <Field label="Year of Study *">
+                <select
+                  className={sel}
+                  value={form.year_of_study}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, year_of_study: e.target.value }))
+                  }
+                >
+                  {["Y1", "Y2", "Y3", "Y4", "Y5"].map((y) => (
+                    <option key={y} value={y}>
+                      {y}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+            </div>
+            <Field label="PDF File *">
+              <input
+                type="file"
+                ref={fileRef}
+                accept="application/pdf"
+                className="text-sm text-gray-600"
+                required
+              />
+            </Field>
+            <div className="flex gap-2 pt-1">
+              <SaveBtn saving={saving} label="Upload" />
+              <CancelBtn onClick={() => setModal(false)} />
+            </div>
+          </form>
+        </Modal>
+      )}
       <div className="flex justify-between items-center mb-5">
         <p className="font-display text-xl font-black text-gray-900 tracking-tight">
           Exam Bank
         </p>
-        <AddBtn label="+ Upload PDF" />
+        <AddBtn label="+ Upload PDF" onClick={() => setModal(true)} />
       </div>
       <table className="w-full bg-white border border-gray-100">
         <thead>
@@ -395,6 +616,18 @@ function ExamsPanel() {
 function ProductsPanel() {
   const [products, setProducts] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(true);
+  const [modal, setModal] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState("");
+  const [cats, setCats] = useState<{ id: number; name: string }[]>([]);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [form, setForm] = useState({
+    name: "",
+    category_id: "",
+    price: "",
+    stock: "0",
+    description: "",
+  });
 
   const load = () => {
     productService
@@ -405,7 +638,39 @@ function ProductsPanel() {
   };
   useEffect(() => {
     load();
+    productService
+      .getCategories()
+      .then((r) => setCats(r.data.data ?? []))
+      .catch(() => setCats([]));
   }, []);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setErr("");
+    try {
+      const fd = new FormData();
+      Object.entries(form).forEach(([k, v]) => fd.append(k, v));
+      const f = fileRef.current?.files?.[0];
+      if (f) fd.append("image", f);
+      await productService.create(fd);
+      setModal(false);
+      setForm({
+        name: "",
+        category_id: "",
+        price: "",
+        stock: "0",
+        description: "",
+      });
+      if (fileRef.current) fileRef.current.value = "";
+      setLoading(true);
+      load();
+    } catch {
+      setErr("Failed to add product.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const del = async (id: number) => {
     if (!confirm("Delete this product?")) return;
@@ -415,11 +680,104 @@ function ProductsPanel() {
 
   return (
     <div>
+      {modal && (
+        <Modal title="Add Product" onClose={() => setModal(false)}>
+          <form onSubmit={submit} className="space-y-4">
+            {err && (
+              <p className="text-red-500 text-xs font-mono bg-red-50 p-2">
+                {err}
+              </p>
+            )}
+            <Field label="Product Name *">
+              <input
+                className={inp}
+                value={form.name}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, name: e.target.value }))
+                }
+                required
+              />
+            </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Category *">
+                <select
+                  className={sel}
+                  value={form.category_id}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, category_id: e.target.value }))
+                  }
+                  required
+                >
+                  <option value="" disabled>
+                    Select…
+                  </option>
+                  {cats.map((c) => (
+                    <option key={c.id} value={String(c.id)}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Price (KES) *">
+                <input
+                  className={inp}
+                  type="number"
+                  min={0}
+                  step="1"
+                  value={form.price}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, price: e.target.value }))
+                  }
+                  required
+                />
+              </Field>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Stock *">
+                <input
+                  className={inp}
+                  type="number"
+                  min={0}
+                  step="1"
+                  value={form.stock}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, stock: e.target.value }))
+                  }
+                  required
+                />
+              </Field>
+              <Field label="Image (optional)">
+                <input
+                  type="file"
+                  ref={fileRef}
+                  accept="image/*"
+                  className="text-sm text-gray-600"
+                />
+              </Field>
+            </div>
+            <Field label="Description (optional)">
+              <textarea
+                className={inp}
+                rows={4}
+                value={form.description}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, description: e.target.value }))
+                }
+                placeholder="Short product description…"
+              />
+            </Field>
+            <div className="flex gap-2 pt-1">
+              <SaveBtn saving={saving} label="Add Product" />
+              <CancelBtn onClick={() => setModal(false)} />
+            </div>
+          </form>
+        </Modal>
+      )}
       <div className="flex justify-between items-center mb-5">
         <p className="font-display text-xl font-black text-gray-900 tracking-tight">
           Products
         </p>
-        <AddBtn label="+ Add Product" />
+        <AddBtn label="+ Add Product" onClick={() => setModal(true)} />
       </div>
       <table className="w-full bg-white border border-gray-100">
         <thead>
@@ -478,6 +836,16 @@ function ProductsPanel() {
 function BlogPanel() {
   const [posts, setPosts] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(true);
+  const [modal, setModal] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState("");
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [form, setForm] = useState({
+    title: "",
+    author_name: "",
+    status: "draft",
+    content: "",
+  });
 
   const load = () => {
     blogService
@@ -490,6 +858,28 @@ function BlogPanel() {
     load();
   }, []);
 
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setErr("");
+    try {
+      const fd = new FormData();
+      Object.entries(form).forEach(([k, v]) => fd.append(k, v));
+      const f = fileRef.current?.files?.[0];
+      if (f) fd.append("image", f);
+      await blogService.create(fd);
+      setModal(false);
+      setForm({ title: "", author_name: "", status: "draft", content: "" });
+      if (fileRef.current) fileRef.current.value = "";
+      setLoading(true);
+      load();
+    } catch {
+      setErr("Failed to create blog post.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const del = async (id: number) => {
     if (!confirm("Delete this post?")) return;
     await blogService.delete(id);
@@ -498,11 +888,83 @@ function BlogPanel() {
 
   return (
     <div>
+      {modal && (
+        <Modal title="New Blog Post" onClose={() => setModal(false)}>
+          <form onSubmit={submit} className="space-y-4">
+            {err && (
+              <p className="text-red-500 text-xs font-mono bg-red-50 p-2">
+                {err}
+              </p>
+            )}
+            <Field label="Title *">
+              <input
+                className={inp}
+                value={form.title}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, title: e.target.value }))
+                }
+                required
+              />
+            </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Author *">
+                <input
+                  className={inp}
+                  value={form.author_name}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, author_name: e.target.value }))
+                  }
+                  required
+                />
+              </Field>
+              <Field label="Status *">
+                <select
+                  className={sel}
+                  value={form.status}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, status: e.target.value }))
+                  }
+                >
+                  {["draft", "published"].map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+            </div>
+            <Field label="Content *">
+              <textarea
+                className={inp}
+                rows={8}
+                value={form.content}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, content: e.target.value }))
+                }
+                required
+                placeholder="Write your post…"
+              />
+            </Field>
+            <Field label="Cover Image (optional)">
+              <input
+                type="file"
+                ref={fileRef}
+                accept="image/*"
+                className="text-sm text-gray-600"
+              />
+            </Field>
+            <div className="flex gap-2 pt-1">
+              <SaveBtn saving={saving} label="Create Post" />
+              <CancelBtn onClick={() => setModal(false)} />
+            </div>
+          </form>
+        </Modal>
+      )}
       <div className="flex justify-between items-center mb-5">
         <p className="font-display text-xl font-black text-gray-900 tracking-tight">
           Blog Posts
         </p>
-        <AddBtn label="+ New Post" />
+        <AddBtn label="+ New Post" onClick={() => setModal(true)} />
       </div>
       <table className="w-full bg-white border border-gray-100">
         <thead>
@@ -554,6 +1016,11 @@ function BlogPanel() {
 function TeamPanel() {
   const [members, setMembers] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(true);
+  const [modal, setModal] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState("");
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [form, setForm] = useState({ name: "", role: "" });
 
   const load = () => {
     teamService
@@ -566,6 +1033,28 @@ function TeamPanel() {
     load();
   }, []);
 
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setErr("");
+    try {
+      const fd = new FormData();
+      Object.entries(form).forEach(([k, v]) => fd.append(k, v));
+      const f = fileRef.current?.files?.[0];
+      if (f) fd.append("image", f);
+      await teamService.create(fd);
+      setModal(false);
+      setForm({ name: "", role: "" });
+      if (fileRef.current) fileRef.current.value = "";
+      setLoading(true);
+      load();
+    } catch {
+      setErr("Failed to add team member.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const del = async (id: number) => {
     if (!confirm("Delete this team member?")) return;
     await teamService.delete(id);
@@ -574,11 +1063,55 @@ function TeamPanel() {
 
   return (
     <div>
+      {modal && (
+        <Modal title="Add Team Member" onClose={() => setModal(false)}>
+          <form onSubmit={submit} className="space-y-4">
+            {err && (
+              <p className="text-red-500 text-xs font-mono bg-red-50 p-2">
+                {err}
+              </p>
+            )}
+            <Field label="Name *">
+              <input
+                className={inp}
+                value={form.name}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, name: e.target.value }))
+                }
+                required
+              />
+            </Field>
+            <Field label="Role *">
+              <input
+                className={inp}
+                value={form.role}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, role: e.target.value }))
+                }
+                required
+                placeholder="e.g. Chairperson"
+              />
+            </Field>
+            <Field label="Photo (optional)">
+              <input
+                type="file"
+                ref={fileRef}
+                accept="image/*"
+                className="text-sm text-gray-600"
+              />
+            </Field>
+            <div className="flex gap-2 pt-1">
+              <SaveBtn saving={saving} label="Add Member" />
+              <CancelBtn onClick={() => setModal(false)} />
+            </div>
+          </form>
+        </Modal>
+      )}
       <div className="flex justify-between items-center mb-5">
         <p className="font-display text-xl font-black text-gray-900 tracking-tight">
           Team Members
         </p>
-        <AddBtn label="+ Add Member" />
+        <AddBtn label="+ Add Member" onClick={() => setModal(true)} />
       </div>
       <table className="w-full bg-white border border-gray-100">
         <thead>
@@ -712,6 +1245,12 @@ function OrdersPanel() {
 function GalleryPanel() {
   const [images, setImages] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(true);
+  const [modal, setModal] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState("");
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [cats, setCats] = useState<string[]>([]);
+  const [form, setForm] = useState({ title: "", category: "" });
 
   const load = () => {
     galleryService
@@ -722,7 +1261,37 @@ function GalleryPanel() {
   };
   useEffect(() => {
     load();
+    galleryService
+      .getCategories()
+      .then((r) => setCats(r.data.data ?? []))
+      .catch(() => setCats([]));
   }, []);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setErr("");
+    try {
+      const f = fileRef.current?.files?.[0];
+      if (!f) {
+        setErr("Please choose an image to upload.");
+        return;
+      }
+      const fd = new FormData();
+      Object.entries(form).forEach(([k, v]) => fd.append(k, v));
+      fd.append("image", f);
+      await galleryService.upload(fd);
+      setModal(false);
+      setForm({ title: "", category: "" });
+      if (fileRef.current) fileRef.current.value = "";
+      setLoading(true);
+      load();
+    } catch {
+      setErr("Failed to upload image.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const del = async (id: number) => {
     if (!confirm("Delete this image?")) return;
@@ -732,11 +1301,61 @@ function GalleryPanel() {
 
   return (
     <div>
+      {modal && (
+        <Modal title="Upload Images" onClose={() => setModal(false)}>
+          <form onSubmit={submit} className="space-y-4">
+            {err && (
+              <p className="text-red-500 text-xs font-mono bg-red-50 p-2">
+                {err}
+              </p>
+            )}
+            <Field label="Title (optional)">
+              <input
+                className={inp}
+                value={form.title}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, title: e.target.value }))
+                }
+                placeholder="e.g. Innovation Week 2026"
+              />
+            </Field>
+            <Field label="Category (optional)">
+              <select
+                className={sel}
+                value={form.category}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, category: e.target.value }))
+                }
+              >
+                <option value="">Uncategorized</option>
+                {cats.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Image File *">
+              <input
+                type="file"
+                ref={fileRef}
+                accept="image/*"
+                className="text-sm text-gray-600"
+                required
+              />
+            </Field>
+            <div className="flex gap-2 pt-1">
+              <SaveBtn saving={saving} label="Upload" />
+              <CancelBtn onClick={() => setModal(false)} />
+            </div>
+          </form>
+        </Modal>
+      )}
       <div className="flex justify-between items-center mb-5">
         <p className="font-display text-xl font-black text-gray-900 tracking-tight">
           Gallery
         </p>
-        <AddBtn label="+ Upload Images" />
+        <AddBtn label="+ Upload Images" onClick={() => setModal(true)} />
       </div>
       {loading ? (
         <div className="grid grid-cols-6 gap-2">
@@ -782,6 +1401,15 @@ function GalleryPanel() {
 function PagesPanel() {
   const [pages, setPages] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(true);
+  const [modal, setModal] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState("");
+  const [form, setForm] = useState({
+    title: "",
+    slug: "",
+    content: "",
+    is_published: false,
+  });
 
   const load = () => {
     cmsService
@@ -794,6 +1422,26 @@ function PagesPanel() {
     load();
   }, []);
 
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setErr("");
+    try {
+      await cmsService.createPage({
+        ...form,
+        is_published: Boolean(form.is_published),
+      });
+      setModal(false);
+      setForm({ title: "", slug: "", content: "", is_published: false });
+      setLoading(true);
+      load();
+    } catch {
+      setErr("Failed to create page.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const del = async (id: number) => {
     if (!confirm("Delete this page?")) return;
     await cmsService.deletePage(id);
@@ -802,11 +1450,71 @@ function PagesPanel() {
 
   return (
     <div>
+      {modal && (
+        <Modal title="New Page (CMS)" onClose={() => setModal(false)}>
+          <form onSubmit={submit} className="space-y-4">
+            {err && (
+              <p className="text-red-500 text-xs font-mono bg-red-50 p-2">
+                {err}
+              </p>
+            )}
+            <Field label="Title *">
+              <input
+                className={inp}
+                value={form.title}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, title: e.target.value }))
+                }
+                required
+              />
+            </Field>
+            <Field label="Slug *">
+              <input
+                className={inp}
+                value={form.slug}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, slug: e.target.value }))
+                }
+                required
+                placeholder="e.g. about"
+              />
+              <p className="font-mono text-[9px] text-gray-400 mt-1">
+                This becomes the URL path: /your-slug
+              </p>
+            </Field>
+            <Field label="Content *">
+              <textarea
+                className={inp}
+                rows={10}
+                value={form.content}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, content: e.target.value }))
+                }
+                required
+              />
+            </Field>
+            <label className="flex items-center gap-2 text-sm text-gray-700">
+              <input
+                type="checkbox"
+                checked={form.is_published}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, is_published: e.target.checked }))
+                }
+              />
+              Publish immediately
+            </label>
+            <div className="flex gap-2 pt-1">
+              <SaveBtn saving={saving} label="Create Page" />
+              <CancelBtn onClick={() => setModal(false)} />
+            </div>
+          </form>
+        </Modal>
+      )}
       <div className="flex justify-between items-center mb-5">
         <p className="font-display text-xl font-black text-gray-900 tracking-tight">
           Page Manager (CMS)
         </p>
-        <AddBtn label="+ New Page" />
+        <AddBtn label="+ New Page" onClick={() => setModal(true)} />
       </div>
       <table className="w-full bg-white border border-gray-100">
         <thead>
@@ -858,6 +1566,16 @@ function PagesPanel() {
 function HeroPanel() {
   const [slides, setSlides] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(true);
+  const [modal, setModal] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState("");
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [form, setForm] = useState({
+    headline: "",
+    cta_text: "",
+    cta_link: "",
+    sort_order: "1",
+  });
 
   const load = () => {
     heroService
@@ -870,6 +1588,32 @@ function HeroPanel() {
     load();
   }, []);
 
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setErr("");
+    try {
+      const f = fileRef.current?.files?.[0];
+      if (!f) {
+        setErr("Please choose a slide image.");
+        return;
+      }
+      const fd = new FormData();
+      Object.entries(form).forEach(([k, v]) => fd.append(k, v));
+      fd.append("image", f);
+      await heroService.create(fd);
+      setModal(false);
+      setForm({ headline: "", cta_text: "", cta_link: "", sort_order: "1" });
+      if (fileRef.current) fileRef.current.value = "";
+      setLoading(true);
+      load();
+    } catch {
+      setErr("Failed to upload hero slide.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const del = async (id: number) => {
     if (!confirm("Delete this slide?")) return;
     await heroService.delete(id);
@@ -878,11 +1622,80 @@ function HeroPanel() {
 
   return (
     <div>
+      {modal && (
+        <Modal title="Upload Hero Slide" onClose={() => setModal(false)}>
+          <form onSubmit={submit} className="space-y-4">
+            {err && (
+              <p className="text-red-500 text-xs font-mono bg-red-50 p-2">
+                {err}
+              </p>
+            )}
+            <Field label="Headline *">
+              <input
+                className={inp}
+                value={form.headline}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, headline: e.target.value }))
+                }
+                required
+              />
+            </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="CTA Text (optional)">
+                <input
+                  className={inp}
+                  value={form.cta_text}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, cta_text: e.target.value }))
+                  }
+                  placeholder="e.g. Join Now"
+                />
+              </Field>
+              <Field label="CTA Link (optional)">
+                <input
+                  className={inp}
+                  value={form.cta_link}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, cta_link: e.target.value }))
+                  }
+                  placeholder="/about"
+                />
+              </Field>
+            </div>
+            <Field label="Sort Order *">
+              <input
+                className={inp}
+                type="number"
+                min={1}
+                step="1"
+                value={form.sort_order}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, sort_order: e.target.value }))
+                }
+                required
+              />
+            </Field>
+            <Field label="Slide Image *">
+              <input
+                type="file"
+                ref={fileRef}
+                accept="image/*"
+                className="text-sm text-gray-600"
+                required
+              />
+            </Field>
+            <div className="flex gap-2 pt-1">
+              <SaveBtn saving={saving} label="Upload Slide" />
+              <CancelBtn onClick={() => setModal(false)} />
+            </div>
+          </form>
+        </Modal>
+      )}
       <div className="flex justify-between items-center mb-5">
         <p className="font-display text-xl font-black text-gray-900 tracking-tight">
           Hero Slides
         </p>
-        <AddBtn label="+ Upload Slide" />
+        <AddBtn label="+ Upload Slide" onClick={() => setModal(true)} />
       </div>
       <table className="w-full bg-white border border-gray-100">
         <thead>
