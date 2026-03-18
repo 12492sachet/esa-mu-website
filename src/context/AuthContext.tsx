@@ -22,35 +22,47 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(() =>
-    localStorage.getItem("esamu_token"),
-  );
+  const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // ─── Run ONCE on mount ────────────────────────────────────────────
+  // Check if a token already exists in localStorage from a previous session.
+  // If yes, verify it with /me. If /me fails, clear everything.
+  // This is the ONLY place /me is called automatically.
   useEffect(() => {
-    if (token) {
-      authService
-        .me()
-        .then((res) => setUser(res.data.data))
-        .catch(() => {
+    const saved = localStorage.getItem("esamu_token");
+    if (!saved) {
+      setLoading(false);
+      return;
+    }
+    authService
+      .me()
+      .then((res) => {
+        setUser(res.data.data);
+        setToken(saved);
+      })
+      .catch((err) => {
+        if (err?.response?.status === 401) {
           setToken(null);
           localStorage.removeItem("esamu_token");
-        })
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
-  }, [token]);
+        }
+      })
+      .finally(() => setLoading(false));
+  }, []); // ← EMPTY array — runs once, never re-runs when token changes
 
-  const login = async (email: string, password: string) => {
+  // ─── Login ────────────────────────────────────────────────────────
+  // We get the user object directly from the login response.
+  // We do NOT call /me again. We do NOT change the useEffect dependency.
+  const login = async (email: string, password: string): Promise<void> => {
     const res = await authService.login(email, password);
-    const { token: t, user: u } = res.data.data;
-    localStorage.setItem("esamu_token", t);
-    setToken(t);
-    setUser(u);
+    const { token: newToken, user: newUser } = res.data.data;
+    localStorage.setItem("esamu_token", newToken);
+    setToken(newToken);
+    setUser(newUser); // ← set user directly, no /me call needed
   };
 
-  const logout = () => {
+  // ─── Logout ───────────────────────────────────────────────────────
+  const logout = (): void => {
     authService.logout().catch(() => {});
     localStorage.removeItem("esamu_token");
     setToken(null);
@@ -76,6 +88,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be inside AuthProvider");
+  if (!ctx) throw new Error("useAuth must be used inside AuthProvider");
   return ctx;
 }

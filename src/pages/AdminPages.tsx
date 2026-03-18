@@ -945,100 +945,171 @@ function HeroPanel() {
 // ─── Main Admin Dashboard ─────────────────────────────────────────
 // ─── Partners Panel ──────────────────────────────────────────────
 function PartnersPanel() {
-  const [partners, setPartners] = useState<{id:number;name:string;full:string;logo_path:string}[]>([])
-  const [loading,  setLoading]  = useState(true)
-  const [saving,   setSaving]   = useState(false)
-  const [err,      setErr]      = useState('')
-  const [form, setForm] = useState({ name: '', full: '' })
-  const [modal, setModal] = useState(false)
-  const fileRef = useRef<HTMLInputElement>(null)
+  const [partners, setPartners] = useState<
+    { id: number; name: string; full: string; logo_path: string }[]
+  >([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState("");
+  const [form, setForm] = useState({ name: "", full: "" });
+  const [modal, setModal] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const load = () => {
-    setLoading(true)
-    partnerService.getAll().then(r => setPartners(r.data.data ?? [])).catch(()=>setPartners([])).finally(()=>setLoading(false))
-  }
-  useEffect(()=>{ load() },[])
+    setLoading(true);
+    partnerService
+      .getAll()
+      .then((r) => setPartners(r.data.data ?? []))
+      .catch(() => setPartners([]))
+      .finally(() => setLoading(false));
+  };
+  useEffect(() => {
+    load();
+  }, []);
 
   const del = async (id: number) => {
-    if (!confirm('Remove this partner?')) return
-    await partnerService.delete(id).catch(()=>{})
-    load()
-  }
+    if (!confirm("Remove this partner?")) return;
+    await partnerService.delete(id).catch(() => {});
+    load();
+  };
 
   const submit = async (e: React.FormEvent) => {
-    e.preventDefault(); setSaving(true); setErr('')
+    e.preventDefault();
+    setSaving(true);
+    setErr("");
     try {
-      const fd = new FormData()
-      fd.append('name', form.name)
-      fd.append('full', form.full)
-      if (fileRef.current?.files?.[0]) fd.append('logo', fileRef.current.files[0])
-      await partnerService.create(fd)
-      setModal(false)
-      setForm({ name:'', full:'' })
-      load()
-    } catch { setErr('Failed to add partner.') }
-    finally { setSaving(false) }
-  }
+      const fd = new FormData();
+      fd.append("name", form.name);
+      fd.append("full", form.full);
+      if (fileRef.current?.files?.[0])
+        fd.append("logo", fileRef.current.files[0]);
+      await partnerService.create(fd);
+      setModal(false);
+      setForm({ name: "", full: "" });
+      load();
+    } catch {
+      setErr("Failed to add partner.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div>
       {modal && (
-        <Modal title="Add Partner" onClose={()=>setModal(false)}>
+        <Modal title="Add Partner" onClose={() => setModal(false)}>
           <form onSubmit={submit} className="space-y-4">
-            {err && <p className="text-red-500 text-xs font-mono bg-red-50 p-2">{err}</p>}
+            {err && (
+              <p className="text-red-500 text-xs font-mono bg-red-50 p-2">
+                {err}
+              </p>
+            )}
             <Field label="Partner Name *">
-              <input className={inp} value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} required placeholder="e.g. IEEE" />
+              <input
+                className={inp}
+                value={form.name}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, name: e.target.value }))
+                }
+                required
+                placeholder="e.g. IEEE"
+              />
             </Field>
             <Field label="Full Name / Description *">
-              <input className={inp} value={form.full} onChange={e=>setForm(f=>({...f,full:e.target.value}))} required placeholder="e.g. Institute of Electrical & Electronics Engineers" />
+              <input
+                className={inp}
+                value={form.full}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, full: e.target.value }))
+                }
+                required
+                placeholder="e.g. Institute of Electrical & Electronics Engineers"
+              />
             </Field>
             <Field label="Logo Image *">
-              <input type="file" ref={fileRef} accept="image/*" className="text-sm text-gray-600" required />
-              <p className="font-mono text-[9px] text-gray-400 mt-1">PNG or JPG, ideally with transparent or white background.</p>
+              <input
+                type="file"
+                ref={fileRef}
+                accept="image/*"
+                className="text-sm text-gray-600"
+                required
+              />
+              <p className="font-mono text-[9px] text-gray-400 mt-1">
+                PNG or JPG, ideally with transparent or white background.
+              </p>
             </Field>
-            <div className="flex gap-2 pt-1"><SaveBtn saving={saving} label="Add Partner" /><CancelBtn onClick={()=>setModal(false)} /></div>
+            <div className="flex gap-2 pt-1">
+              <SaveBtn saving={saving} label="Add Partner" />
+              <CancelBtn onClick={() => setModal(false)} />
+            </div>
           </form>
         </Modal>
       )}
 
       <div className="flex justify-between items-center mb-5">
-        <p className="font-display text-xl font-black text-gray-900 tracking-tight">Partners & Affiliates</p>
-        <AddBtn label="+ Add Partner" onClick={()=>setModal(true)} />
+        <p className="font-display text-xl font-black text-gray-900 tracking-tight">
+          Partners & Affiliates
+        </p>
+        <AddBtn label="+ Add Partner" onClick={() => setModal(true)} />
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-        {loading ? Array(4).fill(0).map((_,i) => (
-          <div key={i} className="bg-white border border-gray-100 p-4 space-y-2">
-            <Skeleton className="h-14 w-full" />
-            <Skeleton className="h-3 w-24" />
+        {loading ? (
+          Array(4)
+            .fill(0)
+            .map((_, i) => (
+              <div
+                key={i}
+                className="bg-white border border-gray-100 p-4 space-y-2"
+              >
+                <Skeleton className="h-14 w-full" />
+                <Skeleton className="h-3 w-24" />
+              </div>
+            ))
+        ) : partners.length === 0 ? (
+          <div className="col-span-4 py-12 text-center text-gray-400 font-mono text-xs">
+            No partners yet.
           </div>
-        )) : partners.length === 0 ? (
-          <div className="col-span-4 py-12 text-center text-gray-400 font-mono text-xs">No partners yet.</div>
-        ) : partners.map(p => (
-          <div key={p.id} className="bg-white border border-gray-100 p-4 flex flex-col items-center gap-3 group relative">
-            <div className="h-16 w-full flex items-center justify-center">
-              <img src={`/api/storage/uploads/${p.logo_path}`} alt={p.name}
-                className="max-h-14 max-w-full object-contain" />
+        ) : (
+          partners.map((p) => (
+            <div
+              key={p.id}
+              className="bg-white border border-gray-100 p-4 flex flex-col items-center gap-3 group relative"
+            >
+              <div className="h-16 w-full flex items-center justify-center">
+                <img
+                  src={`/api/storage/uploads/${p.logo_path}`}
+                  alt={p.name}
+                  className="max-h-14 max-w-full object-contain"
+                />
+              </div>
+              <div className="text-center">
+                <p className="font-display font-bold text-sm text-gray-900">
+                  {p.name}
+                </p>
+                <p className="font-mono text-[9px] text-gray-400 uppercase tracking-wide mt-0.5">
+                  {p.full}
+                </p>
+              </div>
+              <button
+                onClick={() => del(p.id)}
+                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity font-mono text-[9px] uppercase px-2 py-1 border border-red-200 text-red-500 hover:bg-red-50 bg-white"
+              >
+                Remove
+              </button>
             </div>
-            <div className="text-center">
-              <p className="font-display font-bold text-sm text-gray-900">{p.name}</p>
-              <p className="font-mono text-[9px] text-gray-400 uppercase tracking-wide mt-0.5">{p.full}</p>
-            </div>
-            <button onClick={()=>del(p.id)}
-              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity font-mono text-[9px] uppercase px-2 py-1 border border-red-200 text-red-500 hover:bg-red-50 bg-white">
-              Remove
-            </button>
-          </div>
-        ))}
+          ))
+        )}
       </div>
 
       <div className="mt-6 p-4 bg-pink-50 border border-pink-100">
         <p className="font-mono text-[9px] uppercase tracking-widest text-gray-500">
-          Tip: Partner logos appear in the scrolling marquee on the homepage. Use PNG with white or transparent background for best results.
+          Tip: Partner logos appear in the scrolling marquee on the homepage.
+          Use PNG with white or transparent background for best results.
         </p>
       </div>
     </div>
-  )
+  );
 }
 
 type Panel =
@@ -1118,10 +1189,10 @@ const NAV_ITEMS = [
     group: "Content",
     icon: (
       <>
-        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
-        <circle cx="9" cy="7" r="4"/>
-        <path d="M23 21v-2a4 4 0 00-3-3.87"/>
-        <path d="M16 3.13a4 4 0 010 7.75"/>
+        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M23 21v-2a4 4 0 00-3-3.87" />
+        <path d="M16 3.13a4 4 0 010 7.75" />
       </>
     ),
   },
@@ -1186,11 +1257,18 @@ const NAV_ITEMS = [
 ];
 
 export function AdminDashboardPage() {
-  const { isAdmin, user, logout } = useAuth();
   const [active, setActive] = useState<Panel>("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { isAdmin, user, logout, loading } = useAuth();
 
-  // if (!isAdmin) return <Navigate to="/admin/login" replace />
+  if (loading)
+    return (
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-crimson-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+
+  if (!isAdmin) return <Navigate to="/admin/login" replace />;
 
   const groups = [...new Set(NAV_ITEMS.map((n) => n.group))];
 
