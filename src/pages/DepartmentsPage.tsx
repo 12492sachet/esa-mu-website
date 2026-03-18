@@ -9,6 +9,7 @@ export interface Department {
   color: string
   bg: string
   icon: React.ReactNode
+  imagePath?: string
   hod: string
   hodTitle: string
   description: string
@@ -142,10 +143,22 @@ export function DepartmentCards() {
                    style={{ background: dept.color }} />
 
               <div className="flex items-start gap-4">
-                <div className="w-14 h-14 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-300 group-hover:scale-105"
-                     style={{ background: dept.bg, color: dept.color }}>
-                  {dept.icon}
-                </div>
+                {dept.imagePath ? (
+                  <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 border border-pink-100 transition-all duration-300 group-hover:scale-105 bg-pink-50">
+                    <img
+                      src={dept.imagePath}
+                      alt={dept.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div
+                    className="w-14 h-14 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-300 group-hover:scale-105"
+                    style={{ background: dept.bg, color: dept.color }}
+                  >
+                    {dept.icon}
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
                   <div className="font-mono text-[10px] font-bold uppercase tracking-wider mb-1"
                        style={{ color: dept.color }}>
@@ -195,11 +208,23 @@ export default function DepartmentPage() {
       {/* Header */}
       <section className="py-16 px-6" style={{ background: dept.bg }}>
         <div className="max-w-5xl mx-auto">
-          <div className="flex items-start gap-6 flex-wrap">
-            <div className="w-20 h-20 rounded-xl flex items-center justify-center flex-shrink-0"
-                 style={{ background: 'white', color: dept.color, boxShadow: `0 4px 24px ${dept.color}22` }}>
-              <div className="scale-150">{dept.icon}</div>
-            </div>
+          <div className="flex flex-col md:flex-row items-start gap-6">
+            {dept.imagePath ? (
+              <div className="w-full md:w-64 h-40 md:h-48 rounded-xl overflow-hidden flex-shrink-0 border border-white/60 shadow-sm">
+                <img
+                  src={dept.imagePath}
+                  alt={dept.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ) : (
+              <div
+                className="w-20 h-20 rounded-xl flex items-center justify-center flex-shrink-0"
+                style={{ background: 'white', color: dept.color, boxShadow: `0 4px 24px ${dept.color}22` }}
+              >
+                <div className="scale-150">{dept.icon}</div>
+              </div>
+            )}
             <div>
               <span className="font-mono text-[10px] uppercase tracking-widest font-bold" style={{ color: dept.color }}>
                 {dept.short} · Moi University

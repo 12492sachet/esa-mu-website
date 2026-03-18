@@ -122,90 +122,96 @@ export default function EventDetailPage() {
 
   return (
     <main className="min-h-screen bg-white pt-20">
-      {/* Hero / header */}
-      <section className="bg-crimson-950 py-14 px-6 border-b border-crimson-900">
-        <div className="max-w-4xl mx-auto">
-          <Link
-            to="/events"
-            className="flex items-center gap-2 font-mono text-xs text-crimson-400 uppercase tracking-wider mb-6 hover:text-crimson-200 transition-colors"
-          >
-            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round">
-              <line x1="19" y1="12" x2="5" y2="12" />
-              <polyline points="12 19 5 12 12 5" />
-            </svg>
-            Back to Events
-          </Link>
+      <section className="max-w-5xl mx-auto px-4 pb-10">
+        <Link
+          to="/events"
+          className="inline-flex items-center gap-2 font-mono text-[10px] text-gray-500 uppercase tracking-widest hover:text-crimson-700 transition-colors"
+        >
+          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round">
+            <line x1="19" y1="12" x2="5" y2="12" />
+            <polyline points="12 19 5 12 12 5" />
+          </svg>
+          Back to Events
+        </Link>
 
-          <p className="font-mono text-[10px] uppercase tracking-widest text-crimson-400 mb-3">
-            ESA-MU · Events
-          </p>
-          <h1 className="font-display text-3xl md:text-4xl font-black text-white tracking-tight mb-4 leading-tight">
-            {event.title}
-          </h1>
+        <div className="mt-4 grid gap-8 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] md:items-start">
+          {/* Left: media + main content (stacks like Instagram on mobile) */}
+          <article className="bg-white border border-gray-100">
+            {event.image_path && (
+              <div className="w-full bg-black/5">
+                <img
+                  src={`/api/storage/uploads/${event.image_path}`}
+                  alt={event.title}
+                  className="w-full max-h-[420px] object-cover md:object-contain bg-black"
+                />
+              </div>
+            )}
 
-          <div className="flex flex-wrap items-center gap-4 text-xs text-gray-400 font-mono">
-            {date && (
-              <span className="flex items-center gap-1.5 uppercase tracking-wider">
-                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <circle cx="12" cy="12" r="10" />
-                  <path d="M12 6v6l4 2" />
-                </svg>
-                {date.toLocaleDateString('en-KE', {
-                  weekday: 'short',
-                  day: 'numeric',
-                  month: 'short',
-                  year: 'numeric',
-                })}
-                {event.event_time && ` · ${event.event_time}`}
-              </span>
-            )}
-            {event.location && (
-              <span className="flex items-center gap-1.5 uppercase tracking-wider">
-                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0L6.343 16.657a8 8 0 1111.314 0z" />
-                  <circle cx="12" cy="11" r="3" />
-                </svg>
-                {event.location}
-              </span>
-            )}
-            {event.category && (
-              <span className="inline-flex items-center px-2 py-1 bg-crimson-900/60 text-crimson-100 uppercase tracking-wider text-[9px] font-semibold">
-                {event.category}
-              </span>
-            )}
-            <button
-              onClick={handleLike}
-              disabled={likeLoading}
-              className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-white text-[11px] font-mono uppercase tracking-wider hover:bg-white/10 disabled:opacity-60"
-            >
-              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 21s-5-3.33-8-6.64C2 12.35 2 9.5 4 7.5 5-3.5 9 6 12 9c3-3 7-6.5 8-1.5 2 2 2 4.85 0 6.86C17 17.67 12 21 12 21z" />
-              </svg>
-              {likeLoading ? 'Liking…' : `Like · ${event.likes_count ?? 0}`}
-            </button>
-          </div>
-        </div>
-      </section>
+            <div className="p-4 border-t border-gray-100 space-y-3">
+              {/* Title + meta */}
+              <div>
+                <h1 className="font-display text-lg font-black text-gray-900 leading-snug md:text-xl">
+                  {event.title}
+                </h1>
+                <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px] text-gray-500 font-mono">
+                  {date && (
+                    <span className="flex items-center gap-1.5 uppercase tracking-wider">
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M12 6v6l4 2" />
+                      </svg>
+                      {date.toLocaleDateString('en-KE', {
+                        weekday: 'short',
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                      })}
+                      {event.event_time && ` · ${event.event_time}`}
+                    </span>
+                  )}
+                  {event.location && (
+                    <span className="flex items-center gap-1.5 uppercase tracking-wider">
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0L6.343 16.657a8 8 0 1111.314 0z" />
+                        <circle cx="12" cy="11" r="3" />
+                      </svg>
+                      {event.location}
+                    </span>
+                  )}
+                  {event.category && (
+                    <span className="inline-flex items-center px-2 py-1 bg-pink-50 text-crimson-700 uppercase tracking-wider text-[9px] font-semibold rounded-full">
+                      {event.category}
+                    </span>
+                  )}
+                </div>
+              </div>
 
-      {/* Body */}
-      <section className="max-w-4xl mx-auto px-6 py-10 grid gap-10 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-        <article>
-          {event.image_path && (
-            <div className="mb-8 overflow-hidden border border-gray-100">
-              <img
-                src={`/api/storage/uploads/${event.image_path}`}
-                alt={event.title}
-                className="w-full h-64 md:h-80 object-cover"
-              />
+              {/* Like row (Instagram-style button under media) */}
+              <div className="flex items-center gap-3 pt-1">
+                <button
+                  onClick={handleLike}
+                  disabled={likeLoading}
+                  className="inline-flex items-center gap-2 text-sm text-crimson-700 hover:text-crimson-900 disabled:opacity-60"
+                  type="button"
+                >
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 21s-5-3.33-8-6.64C2 12.35 2 9.5 4 7.5 5-3.5 9 6 12 9c3-3 7-6.5 8-1.5 2 2 2 4.85 0 6.86C17 17.67 12 21 12 21z" />
+                  </svg>
+                  <span className="font-mono text-[11px] uppercase tracking-widest">
+                    {likeLoading ? 'Liking…' : `Like · ${event.likes_count ?? 0}`}
+                  </span>
+                </button>
+              </div>
+
+              {/* Description / caption */}
+              <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
+                {event.description}
+              </p>
             </div>
-          )}
-          <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
-            {event.description}
-          </p>
-        </article>
+          </article>
 
-        {/* Comments & engagement */}
-        <aside className="space-y-6">
+          {/* Right: comments column (drops below on mobile) */}
+          <aside className="space-y-6">
           <div>
             <p className="font-mono text-[10px] uppercase tracking-widest text-gray-400 mb-3">
               Comments
@@ -254,6 +260,7 @@ export default function EventDetailPage() {
             </button>
           </form>
         </aside>
+        </div>
       </section>
     </main>
   )
