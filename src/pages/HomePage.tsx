@@ -421,34 +421,7 @@ function BlogPreview() {
       .finally(() => setLoading(false));
   }, []);
 
-  const FALLBACK_POSTS: BlogPost[] = [
-    {
-      id: -1 as any,
-      title: "Innovation Week 2026: What to Expect",
-      excerpt:
-        "A quick breakdown of the agenda, workshops, and how to register early to secure your spot.",
-      content: "",
-      author_name: "ESA-MU Media Desk",
-      status: "published" as any,
-      published_at: new Date().toISOString(),
-      featured_image: "",
-      tags: [],
-    } as any,
-    {
-      id: -2 as any,
-      title: "How to Use the Exam Bank Effectively",
-      excerpt:
-        "A practical strategy for turning past papers into marks — from Y1 to Y5.",
-      content: "",
-      author_name: "Academic Committee",
-      status: "published" as any,
-      published_at: new Date(Date.now() - 86400000).toISOString(),
-      featured_image: "",
-      tags: [],
-    } as any,
-  ];
-
-  const shown = !loading && posts.length === 0 ? FALLBACK_POSTS : posts;
+  const shown = posts;
 
   return (
     <section className="py-20 bg-gray-50">
@@ -512,11 +485,9 @@ function BlogPreview() {
                         className="w-full h-full object-cover opacity-60"
                       />
                     ) : (
-                      <img
-                        src="/IMG_6351.JPG"
-                        alt=""
-                        className="w-full h-full object-cover opacity-60"
-                      />
+                      <span className="font-mono text-4xl font-black text-gray-800 select-none">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
                     )}
                   </div>
                   <div className="p-6">

@@ -119,10 +119,10 @@ export const adminService = {
 export const eventService = {
   getAll: (params?: Record<string, string>) => api.get('/events', { params }),
   getOne: (id: number) => api.get(`/events/${id}`),
-  // IMPORTANT: do NOT set Content-Type manually for FormData in the browser.
-  // Axios/browser will set the correct multipart boundary automatically.
-  create: (data: FormData) => api.post('/admin/events', data),
-  update: (id: number, data: FormData) => api.post(`/admin/events/${id}`, data),
+  create: (data: FormData) =>
+    api.post('/admin/events', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  update: (id: number, data: FormData) =>
+    api.post(`/admin/events/${id}`, data, { headers: { 'Content-Type': 'multipart/form-data' } }),
   delete: (id: number) => api.delete(`/admin/events/${id}`),
   like: (id: number) => api.post(`/events/${id}/like`),
   comment: (id: number, payload: { name: string; body: string }) =>

@@ -1061,6 +1061,7 @@ function TeamPanel() {
   const [form, setForm] = useState({
     name: "",
     role: "",
+    order: "1",
     linkedin_url: "",
     twitter_url: "",
     instagram_url: "",
@@ -1098,15 +1099,15 @@ function TeamPanel() {
         );
         return;
       }
-      // Align with public TeamPage fields (`profile_image`).
-      fd.append("profile_image", f);
-      // Backwards/alternate key support (some backends expect `image`).
+      // Backend expects `image` field; keep `profile_image` for frontend consistency.
       fd.append("image", f);
+      fd.append("profile_image", f);
       await teamService.create(fd);
       setModal(false);
       setForm({
         name: "",
         role: "",
+        order: "1",
         linkedin_url: "",
         twitter_url: "",
         instagram_url: "",
@@ -1156,6 +1157,18 @@ function TeamPanel() {
                 }
                 required
                 placeholder="e.g. Chairperson"
+              />
+            </Field>
+            <Field label="Order / Priority">
+              <input
+                className={inp}
+                type="number"
+                min={1}
+                step="1"
+                value={form.order}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, order: e.target.value }))
+                }
               />
             </Field>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
