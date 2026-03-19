@@ -6,7 +6,7 @@ export default function EventsPage() {
   const [events,   setEvents]   = useState<unknown[]>([])
   const [loading,  setLoading]  = useState(true)
   const [filter,   setFilter]   = useState('All')
-  const categories = ['All', 'Academic', 'Social', 'Sports', 'Career', 'Workshop', 'Other']
+  const categories = ['All', 'Academic', 'Social', 'Sports', 'Technical', 'Cultural']
 
   useEffect(() => {
     eventService.getAll()
@@ -21,8 +21,8 @@ export default function EventsPage() {
 
   const catColor: Record<string, string> = {
     Academic:'bg-blue-50 text-blue-700', Social:'bg-purple-50 text-purple-700',
-    Sports:'bg-green-50 text-green-700', Career:'bg-amber-50 text-amber-700',
-    Workshop:'bg-orange-50 text-orange-700', Other:'bg-gray-100 text-gray-600',
+    Sports:'bg-green-50 text-green-700', Technical:'bg-amber-50 text-amber-700',
+    Cultural:'bg-orange-50 text-orange-700',
   }
 
   return (

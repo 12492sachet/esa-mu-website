@@ -214,7 +214,7 @@ const inp =
 const sel =
   "w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-crimson-500 bg-white";
 
-const MAX_UPLOAD_BYTES = 2 * 1024 * 1024; // 2MB (server-friendly default)
+const MAX_UPLOAD_BYTES = 20 * 1024 * 1024; // 20MB (matches backend limit)
 function fmtBytes(n: number) {
   const mb = n / (1024 * 1024);
   return `${mb.toFixed(mb >= 10 ? 0 : 1)} MB`;
@@ -1888,7 +1888,7 @@ function EventsPanel() {
   const [form, setForm] = useState({
     title: "",
     description: "",
-    category: "Other",
+    category: "Academic",
     location: "",
     event_date: "",
     event_time: "",
@@ -1924,16 +1924,14 @@ function EventsPanel() {
           );
           return;
         }
-        // Send under common keys to match backend validation expectations.
         fd.append("image", f);
-        fd.append("cover_image", f);
       }
       await eventService.create(fd);
       setModal(false);
       setForm({
         title: "",
         description: "",
-        category: "Other",
+        category: "Academic",
         location: "",
         event_date: "",
         event_time: "",
@@ -1953,7 +1951,7 @@ function EventsPanel() {
     load();
   };
 
-  const CATS = ["Academic", "Social", "Sports", "Career", "Workshop", "Other"];
+  const CATS = ["Academic", "Social", "Sports", "Technical", "Cultural"];
 
   return (
     <div>
@@ -2031,11 +2029,12 @@ function EventsPanel() {
               <Field label="Time (optional)">
                 <input
                   className={inp}
+                  type="time"
                   value={form.event_time}
                   onChange={(e) =>
                     setForm((p) => ({ ...p, event_time: e.target.value }))
                   }
-                  placeholder="e.g. 2:00 PM"
+                  placeholder="09:00"
                 />
               </Field>
             </div>
