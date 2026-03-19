@@ -81,9 +81,7 @@ export function BlogPage() {
                   {post.featured_image
                     ? <img src={`/api/storage/uploads/${post.featured_image}`} alt={post.title}
                         className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-300" />
-                    : <span className="font-mono text-5xl font-black text-gray-800 select-none">
-                        {String(i + 1).padStart(2, '0')}
-                      </span>
+                    : <img src="/IMG_6351.JPG" alt="" className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-300" />
                   }
                 </div>
                 <div className="p-6">

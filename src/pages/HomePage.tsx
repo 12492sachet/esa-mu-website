@@ -485,9 +485,11 @@ function BlogPreview() {
                         className="w-full h-full object-cover opacity-60"
                       />
                     ) : (
-                      <span className="font-mono text-4xl font-black text-gray-800 select-none">
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
+                      <img
+                        src="/IMG_6351.JPG"
+                        alt=""
+                        className="w-full h-full object-cover opacity-60"
+                      />
                     )}
                   </div>
                   <div className="p-6">

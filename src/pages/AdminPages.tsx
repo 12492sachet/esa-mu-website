@@ -904,7 +904,11 @@ function BlogPanel() {
       const fd = new FormData();
       Object.entries(form).forEach(([k, v]) => fd.append(k, v));
       const f = fileRef.current?.files?.[0];
-      if (f) fd.append("image", f);
+      if (f) {
+        // Backend may validate under either key (common patterns).
+        fd.append("image", f);
+        fd.append("featured_image", f);
+      }
       await blogService.create(fd);
       setModal(false);
       setForm({ title: "", author_name: "", status: "draft", content: "" });
