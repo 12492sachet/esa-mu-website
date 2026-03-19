@@ -1913,10 +1913,9 @@ function EventsPanel() {
     setErr("");
     try {
       const fd = new FormData();
-      Object.entries(form).forEach(([k, v]) => {
-        if (typeof v === "string" && v.trim() === "") return;
-        fd.append(k, v);
-      });
+      // For PHP validators it's usually better to always send all keys,
+      // even if optional fields are empty strings.
+      Object.entries(form).forEach(([k, v]) => fd.append(k, v));
       const f = fileRef.current?.files?.[0];
       if (f) {
         if (f.size > MAX_UPLOAD_BYTES) {
@@ -1925,7 +1924,9 @@ function EventsPanel() {
           );
           return;
         }
+        // Send under common keys to match backend validation expectations.
         fd.append("image", f);
+        fd.append("cover_image", f);
       }
       await eventService.create(fd);
       setModal(false);
