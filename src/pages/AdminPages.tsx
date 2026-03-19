@@ -2116,6 +2116,7 @@ function ProjectsPanel() {
   const [projects, setProjects] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
+  const [actingId, setActingId] = useState<number | null>(null);
 
   const load = () => {
     setLoading(true);
@@ -2131,13 +2132,40 @@ function ProjectsPanel() {
     load();
   }, []);
 
-  const approve = async (id: number) => {
-    await adminProjectService.approve(id).catch(() => {});
-    load();
+  const patchLocal = (id: number, patch: Record<string, any>) => {
+    setProjects((prev) =>
+      (prev as Record<string, any>[]).map((p) => (Number(p.id) === id ? { ...p, ...patch } : p)),
+    );
   };
+
+  const approve = async (id: number) => {
+    setActingId(id);
+    setErr("");
+    // optimistic UI: mark approved immediately
+    patchLocal(id, { status: "approved" });
+    try {
+      await adminProjectService.approve(id);
+    } catch (e: unknown) {
+      // revert on failure
+      patchLocal(id, { status: "pending" });
+      setErr(apiErr(e, "Failed to approve project."));
+    } finally {
+      setActingId(null);
+    }
+  };
+
   const reject = async (id: number) => {
-    await adminProjectService.reject(id).catch(() => {});
-    load();
+    setActingId(id);
+    setErr("");
+    patchLocal(id, { status: "rejected" });
+    try {
+      await adminProjectService.reject(id);
+    } catch (e: unknown) {
+      patchLocal(id, { status: "pending" });
+      setErr(apiErr(e, "Failed to reject project."));
+    } finally {
+      setActingId(null);
+    }
   };
   const del = async (id: number) => {
     if (!confirm("Delete this project submission?")) return;
@@ -2219,18 +2247,34 @@ function ProjectsPanel() {
                   </Td>
                   <Td>
                     <div className="flex gap-2">
-                      <button
-                        onClick={() => approve(Number(p.id))}
-                        className="font-mono text-[9px] uppercase tracking-wider px-3 py-1.5 border border-emerald-200 text-emerald-700 hover:bg-emerald-50 transition-colors"
-                      >
-                        Approve
-                      </button>
-                      <button
-                        onClick={() => reject(Number(p.id))}
-                        className="font-mono text-[9px] uppercase tracking-wider px-3 py-1.5 border border-amber-200 text-amber-700 hover:bg-amber-50 transition-colors"
-                      >
-                        Reject
-                      </button>
+                      {(s === "pending" || s === "draft") && (
+                        <>
+                          <button
+                            onClick={() => approve(Number(p.id))}
+                            disabled={actingId === Number(p.id)}
+                            className="font-mono text-[9px] uppercase tracking-wider px-3 py-1.5 border border-emerald-200 text-emerald-700 hover:bg-emerald-50 disabled:opacity-60 transition-colors"
+                          >
+                            {actingId === Number(p.id) ? "Working…" : "Approve"}
+                          </button>
+                          <button
+                            onClick={() => reject(Number(p.id))}
+                            disabled={actingId === Number(p.id)}
+                            className="font-mono text-[9px] uppercase tracking-wider px-3 py-1.5 border border-amber-200 text-amber-700 hover:bg-amber-50 disabled:opacity-60 transition-colors"
+                          >
+                            {actingId === Number(p.id) ? "Working…" : "Reject"}
+                          </button>
+                        </>
+                      )}
+                      {(s === "approved" || s === "published") && (
+                        <span className="font-mono text-[9px] uppercase tracking-wider px-3 py-1.5 border border-emerald-200 text-emerald-700 bg-emerald-50">
+                          Approved
+                        </span>
+                      )}
+                      {s === "rejected" && (
+                        <span className="font-mono text-[9px] uppercase tracking-wider px-3 py-1.5 border border-red-200 text-red-700 bg-red-50">
+                          Rejected
+                        </span>
+                      )}
                       <button
                         onClick={() => del(Number(p.id))}
                         className="font-mono text-[9px] uppercase tracking-wider px-3 py-1.5 border border-red-200 text-red-600 hover:bg-red-50 transition-colors"
