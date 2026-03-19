@@ -124,10 +124,9 @@ export const eventService = {
   update: (id: number, data: FormData) =>
     api.post(`/admin/events/${id}`, data, { headers: { 'Content-Type': 'multipart/form-data' } }),
   delete: (id: number) => api.delete(`/admin/events/${id}`),
-  like:   (id: number) => api.post(`/events/${id}/like`),
+  like: (id: number) => api.post(`/events/${id}/like`),
   comment: (id: number, payload: { name: string; body: string }) =>
     api.post(`/events/${id}/comments`, payload),
-  getComments: (id: number) => api.get(`/events/${id}/comments`),
   likeComment: (eventId: number, commentId: number) =>
     api.post(`/events/${eventId}/comments/${commentId}/like`),
   replyToComment: (eventId: number, commentId: number, payload: { name: string; body: string }) =>
