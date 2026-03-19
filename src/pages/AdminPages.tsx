@@ -1372,7 +1372,9 @@ function GalleryPanel() {
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
-  const [cats, setCats] = useState<string[]>([]);
+  const [cats, setCats] = useState<
+    Array<string | { id: number; name: string; slug: string }>
+  >([]);
   const [form, setForm] = useState({ title: "", category: "" });
 
   const load = () => {
@@ -1386,7 +1388,7 @@ function GalleryPanel() {
     load();
     galleryService
       .getCategories()
-      .then((r) => setCats(r.data.data ?? []))
+      .then((r) => setCats((r.data.data ?? []) as any[]))
       .catch(() => setCats([]));
   }, []);
 
@@ -1457,11 +1459,20 @@ function GalleryPanel() {
                 }
               >
                 <option value="">Uncategorized</option>
-                {cats.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
+                {cats.map((c) => {
+                  if (typeof c === "string") {
+                    return (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    );
+                  }
+                  return (
+                    <option key={c.id} value={c.slug}>
+                      {c.name}
+                    </option>
+                  );
+                })}
               </select>
             </Field>
             <Field label="Image File *">

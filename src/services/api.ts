@@ -38,7 +38,7 @@ export const authService = {
 export const heroService = {
   getAll: () => api.get('/hero-slides'),
   create: (data: FormData) =>
-    api.post('/admin/hero-slides', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+    api.post('/admin/hero-slides', data, { headers: { 'Content-Type': undefined } }),
   delete: (id: number) => api.delete(`/admin/hero-slides/${id}`),
 }
 
@@ -47,9 +47,9 @@ export const examService = {
   getOne:   (id: number) => api.get(`/exams/${id}`),
   download: (id: number) => api.get(`/exams/${id}/download`, { responseType: 'blob' }),
   create:   (data: FormData) =>
-    api.post('/admin/exams', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+    api.post('/admin/exams', data, { headers: { 'Content-Type': undefined } }),
   update:   (id: number, data: FormData) =>
-    api.post(`/admin/exams/${id}`, data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+    api.post(`/admin/exams/${id}`, data, { headers: { 'Content-Type': undefined } }),
   delete:   (id: number) => api.delete(`/admin/exams/${id}`),
 }
 
@@ -58,9 +58,9 @@ export const productService = {
   getOne:        (slug: string) => api.get(`/products/${slug}`),
   getCategories: () => api.get('/products/categories'),
   create: (data: FormData) =>
-    api.post('/admin/products', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+    api.post('/admin/products', data, { headers: { 'Content-Type': undefined } }),
   update: (id: number, data: FormData) =>
-    api.post(`/admin/products/${id}`, data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+    api.post(`/admin/products/${id}`, data, { headers: { 'Content-Type': undefined } }),
   delete: (id: number) => api.delete(`/admin/products/${id}`),
 }
 
@@ -77,18 +77,18 @@ export const blogService = {
   getAll: (params?: Record<string, string>) => api.get('/blog', { params }),
   getOne: (id: number) => api.get(`/blog/${id}`),
   create: (data: FormData) =>
-    api.post('/admin/blog', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+    api.post('/admin/blog', data, { headers: { 'Content-Type': undefined } }),
   update: (id: number, data: FormData) =>
-    api.post(`/admin/blog/${id}`, data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+    api.post(`/admin/blog/${id}`, data, { headers: { 'Content-Type': undefined } }),
   delete: (id: number) => api.delete(`/admin/blog/${id}`),
 }
 
 export const teamService = {
   getAll: () => api.get('/team'),
   create: (data: FormData) =>
-    api.post('/admin/team', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+    api.post('/admin/team', data, { headers: { 'Content-Type': undefined } }),
   update: (id: number, data: FormData) =>
-    api.post(`/admin/team/${id}`, data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+    api.post(`/admin/team/${id}`, data, { headers: { 'Content-Type': undefined } }),
   delete: (id: number) => api.delete(`/admin/team/${id}`),
 }
 
@@ -97,7 +97,7 @@ export const galleryService = {
     api.get('/gallery', { params: category ? { category } : {} }),
   getCategories: () => api.get('/gallery/categories'),
   upload: (data: FormData) =>
-    api.post('/admin/gallery', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+    api.post('/admin/gallery', data, { headers: { 'Content-Type': undefined } }),
   delete: (id: number) => api.delete(`/admin/gallery/${id}`),
 }
 
@@ -120,9 +120,9 @@ export const eventService = {
   getAll: (params?: Record<string, string>) => api.get('/events', { params }),
   getOne: (id: number) => api.get(`/events/${id}`),
   create: (data: FormData) =>
-    api.post('/admin/events', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+    api.post('/admin/events', data, { headers: { 'Content-Type': undefined } }),
   update: (id: number, data: FormData) =>
-    api.post(`/admin/events/${id}`, data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+    api.post(`/admin/events/${id}`, data, { headers: { 'Content-Type': undefined } }),
   delete: (id: number) => api.delete(`/admin/events/${id}`),
   like: (id: number) => api.post(`/events/${id}/like`),
   comment: (id: number, payload: { name: string; body: string }) =>
@@ -136,7 +136,7 @@ export const eventService = {
 export const projectService = {
   getAll: (params?: Record<string, string>) => api.get('/projects', { params }),
   create: (data: FormData) =>
-    api.post('/projects', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+    api.post('/projects', data, { headers: { 'Content-Type': undefined } }),
 }
 
 export const adminProjectService = {
@@ -165,6 +165,6 @@ export function downloadBlob(blob: Blob, filename: string) {
 export const partnerService = {
   getAll: () => api.get('/partners'),
   create: (data: FormData) =>
-    api.post('/admin/partners', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+    api.post('/admin/partners', data, { headers: { 'Content-Type': undefined } }),
   delete: (id: number) => api.delete(`/admin/partners/${id}`),
 }
