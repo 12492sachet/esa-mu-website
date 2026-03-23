@@ -20,51 +20,51 @@ export interface Department {
 export const DEPARTMENTS: Department[] = [
   {
     slug: 'mechanical-engineering',
-    short: 'ME',
-    name: 'Mechanical Engineering',
+    short: 'MPE',
+    name: 'Mechanical and Production Engineering',
     color: '#8B1A1A',
     bg: '#fdf2f2',
     icon: (
       <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+        <circle cx="12" cy="12" r="3" /><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83" />
       </svg>
     ),
-    hod: 'Prof. John Mutai', hodTitle: 'Head of Department',
+    hod: 'Dr. Stephen Talai', hodTitle: 'Head of Department',
     description: 'The Mechanical Engineering department trains engineers in design, analysis, manufacturing, and maintenance of mechanical systems.',
     focusAreas: ['Thermodynamics', 'Machine Design', 'Manufacturing', 'Fluid Mechanics', 'CAD/CAM'],
-    programmes: ['BSc Mechanical Engineering', 'BSc Mechatronics Engineering'],
+    programmes: ['BEng. Mechanical Engineering'],
   },
   {
     slug: 'electrical-electronic-engineering',
-    short: 'EEE',
-    name: 'Electrical & Electronic Engineering',
+    short: 'EC',
+    name: 'Electrical & Electronics Engineering',
     color: '#C8900A',
     bg: '#fffbeb',
     icon: (
       <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+        <path strokeLinecap="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
       </svg>
     ),
-    hod: 'Dr. Agnes Njoroge', hodTitle: 'Head of Department',
+    hod: 'Dr. Steven Obura', hodTitle: 'Head of Department',
     description: 'Covers power systems, electronics, control systems, and communications engineering with strong practical components.',
     focusAreas: ['Power Systems', 'Electronics', 'Control Systems', 'Telecommunications', 'Renewable Energy'],
-    programmes: ['BSc Electrical & Electronic Engineering', 'BSc Power Engineering'],
+    programmes: ['BEng. Electrical & Electronic Engineering', 'BSc Power Engineering'],
   },
   {
     slug: 'civil-structural-engineering',
-    short: 'CVE',
+    short: 'CSE',
     name: 'Civil & Structural Engineering',
     color: '#5B6B00',
     bg: '#f7fae6',
     icon: (
       <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M2 20h20M4 20V10l8-7 8 7v10M9 20v-5h6v5"/>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M2 20h20M4 20V10l8-7 8 7v10M9 20v-5h6v5" />
       </svg>
     ),
-    hod: 'Dr. Paul Ochieng', hodTitle: 'Head of Department',
+    hod: 'Eng. Patrick Jangaya', hodTitle: 'Head of Department',
     description: 'Focuses on design and construction of infrastructure including buildings, bridges, roads, and water systems.',
     focusAreas: ['Structural Analysis', 'Geotechnics', 'Hydraulics', 'Transport Engineering', 'Construction Management'],
-    programmes: ['BSc Civil Engineering', 'BSc Structural Engineering'],
+    programmes: ['BEng. Civil Engineering', 'BSc Structural Engineering'],
   },
   {
     slug: 'chemical-processing-engineering',
@@ -74,45 +74,45 @@ export const DEPARTMENTS: Department[] = [
     bg: '#f0f7ff',
     icon: (
       <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" d="M9 3h6M9 3v6l-4 9h14l-4-9V3"/>
+        <path strokeLinecap="round" d="M9 3h6M9 3v6l-4 9h14l-4-9V3" />
       </svg>
     ),
-    hod: 'Dr. Faith Waweru', hodTitle: 'Head of Department',
+    hod: 'Dr. Anthony Muliwa', hodTitle: 'Head of Department',
     description: 'Trains engineers in chemical processes, materials science, and industrial processing for the manufacturing and energy sectors.',
     focusAreas: ['Process Engineering', 'Materials Science', 'Environmental Engineering', 'Petrochemicals', 'Food Technology'],
-    programmes: ['BSc Chemical Engineering', 'BSc Processing Engineering'],
+    programmes: ['BEng. Chemical Engineering', 'BSc Processing Engineering'],
   },
   {
     slug: 'electrical-telecommunication-engineering',
-    short: 'ETE',
-    name: 'Electrical & Telecom Engineering',
+    short: 'TLE',
+    name: 'Electrical & Telecommunication Engineering',
     color: '#5B1A8B',
     bg: '#f7f0ff',
     icon: (
       <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" d="M8.288 15.038a5.25 5.25 0 017.424 0M5.106 11.856a9 9 0 0113.788 0M1.924 8.674a13.5 13.5 0 0120.152 0M12 20.25h.008v.008H12v-.008z"/>
+        <path strokeLinecap="round" d="M8.288 15.038a5.25 5.25 0 017.424 0M5.106 11.856a9 9 0 0113.788 0M1.924 8.674a13.5 13.5 0 0120.152 0M12 20.25h.008v.008H12v-.008z" />
       </svg>
     ),
-    hod: 'Prof. Samuel Kipkoech', hodTitle: 'Head of Department',
+    hod: 'Dr. Steven Obura', hodTitle: 'Head of Department',
     description: 'Combines electrical engineering fundamentals with telecommunications technology, networks, and signal processing.',
     focusAreas: ['Networking', 'Signal Processing', 'Wireless Communications', 'Fibre Optics', 'IoT Systems'],
-    programmes: ['BSc Electrical & Telecom Engineering', 'BSc Communications Engineering'],
+    programmes: ['BEng. Electrical & Telecom Engineering', 'BSc Communications Engineering'],
   },
   {
     slug: 'manufacturing-industrial-engineering',
-    short: 'MITE',
+    short: 'MIT',
     name: 'Manufacturing & Industrial Engineering',
     color: '#1A6B4A',
     bg: '#f0fff8',
     icon: (
       <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z"/>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z" />
       </svg>
     ),
     hod: 'Dr. Caroline Mwangi', hodTitle: 'Head of Department',
     description: 'Focuses on optimizing production systems, quality management, and industrial processes for efficiency and sustainability.',
     focusAreas: ['Production Planning', 'Quality Control', 'Ergonomics', 'Supply Chain', 'Automation'],
-    programmes: ['BSc Manufacturing Engineering', 'BSc Industrial Engineering', 'BSc Textile Engineering'],
+    programmes: ['BEng. Manufacturing Engineering', 'BSc Industrial Engineering', 'BSc Textile Engineering'],
   },
 ]
 
@@ -140,7 +140,7 @@ export function DepartmentCards() {
               className="bg-white border border-pink-100 hover:border-pink-300 p-6 group transition-all duration-300 hover:-translate-y-1 hover:shadow-md relative overflow-hidden">
               {/* Accent bar on bottom */}
               <div className="absolute bottom-0 left-0 right-0 h-0.5 scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300"
-                   style={{ background: dept.color }} />
+                style={{ background: dept.color }} />
 
               <div className="flex items-start gap-4">
                 {dept.imagePath ? (
@@ -161,7 +161,7 @@ export function DepartmentCards() {
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="font-mono text-[10px] font-bold uppercase tracking-wider mb-1"
-                       style={{ color: dept.color }}>
+                    style={{ color: dept.color }}>
                     {dept.short}
                   </div>
                   <h3 className="font-display font-bold text-base text-gray-900 group-hover:text-crimson-700 leading-tight transition-colors">
@@ -175,10 +175,10 @@ export function DepartmentCards() {
               </p>
 
               <div className="flex items-center gap-1.5 mt-4 font-mono text-[10px] uppercase tracking-wider transition-colors"
-                   style={{ color: dept.color }}>
+                style={{ color: dept.color }}>
                 Learn more
                 <svg className="w-3 h-3 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round">
-                  <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                  <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
                 </svg>
               </div>
             </Link>
@@ -247,7 +247,7 @@ export default function DepartmentPage() {
             <div className="flex flex-wrap gap-2">
               {dept.focusAreas.map(area => (
                 <span key={area} className="font-mono text-[10px] uppercase tracking-wider px-3 py-1.5 border"
-                      style={{ background: dept.bg, color: dept.color, borderColor: dept.color + '33' }}>
+                  style={{ background: dept.bg, color: dept.color, borderColor: dept.color + '33' }}>
                   {area}
                 </span>
               ))}
@@ -274,7 +274,7 @@ export default function DepartmentPage() {
               <Link key={d.slug} to={`/departments/${d.slug}`}
                 className="flex items-center gap-3 p-3 bg-pink-50 hover:bg-pink-100 border border-pink-100 transition-colors group">
                 <div className="w-7 h-7 rounded flex items-center justify-center flex-shrink-0"
-                     style={{ background: d.bg, color: d.color }}>
+                  style={{ background: d.bg, color: d.color }}>
                   <div className="scale-75">{d.icon}</div>
                 </div>
                 <div>
