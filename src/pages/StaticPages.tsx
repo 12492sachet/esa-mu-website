@@ -30,7 +30,7 @@ export function AboutPage() {
             <span className="font-mono text-xs text-crimson-600 uppercase tracking-widest">Our Mission</span>
           </div>
           <h2 className="font-display text-2xl font-black text-gray-900 tracking-tight leading-snug mb-6">
-            Empowering engineering students through community, knowledge, and opportunity.
+            Naturing a generation of engineers committed to creating and developing transformative solutions that drive positive, long-lasting impact in the society.
           </h2>
           <div className="space-y-4 text-sm text-gray-500 leading-relaxed">
             <p>The Engineering Students' Association of Moi University (ESA-MU) supports every student in the School of Engineering across Civil, Electrical, Mechanical, Chemical, and all other disciplines.</p>
@@ -43,7 +43,7 @@ export function AboutPage() {
             <span className="font-mono text-xs text-crimson-500 uppercase tracking-widest">Our Vision</span>
           </div>
           <h3 className="font-display text-xl font-black text-white tracking-tight leading-snug mb-6">
-            To be Africa's most impactful engineering student community.
+            To be a world class Engineering Student's Association.
           </h3>
           <p className="text-sm text-gray-600 leading-relaxed">
             Every engineering student at Moi University — regardless of background — deserves access to the tools, networks, and mentorship needed to become a world-class engineer.
@@ -53,7 +53,7 @@ export function AboutPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-gray-800">
-        {[['2019','Founded'],['280+','Active Members'],['130+','Past Papers'],['5','Departments']].map(([v, l]) => (
+        {[['2019', 'Founded'], ['280+', 'Active Members'], ['130+', 'Past Papers'], ['5', 'Departments']].map(([v, l]) => (
           <div key={l} className="bg-gray-950 p-8 hover:border-b-2 hover:border-crimson-700 transition-all">
             <div className="font-display text-4xl font-black text-white tracking-tight">{v}</div>
             <div className="font-mono text-[9px] uppercase tracking-widest text-gray-600 mt-2">{l}</div>
@@ -81,13 +81,13 @@ export function AboutPage() {
 }
 
 export function TeamPage() {
-  const [members,  setMembers]  = useState<TeamMember[]>([])
-  const [loading,  setLoading]  = useState(true)
+  const [members, setMembers] = useState<TeamMember[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     teamService.getAll()
       .then(res => setMembers(res.data.data))
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoading(false))
   }, [])
 
@@ -111,8 +111,8 @@ export function TeamPage() {
               <div key={i} className="bg-white border border-gray-100 overflow-hidden">
                 <Skeleton className="h-56 w-full" />
                 <div className="p-7 space-y-3 text-center">
-                <Skeleton className="h-4 w-32 mx-auto" />
-                <Skeleton className="h-3 w-20 mx-auto" />
+                  <Skeleton className="h-4 w-32 mx-auto" />
+                  <Skeleton className="h-3 w-20 mx-auto" />
                 </div>
               </div>
             ))}
@@ -190,20 +190,20 @@ export function TeamPage() {
 
 // ─── Gallery ─────────────────────────────────────────────────────
 export function GalleryPage() {
-  const [images,     setImages]     = useState<GalleryImage[]>([])
+  const [images, setImages] = useState<GalleryImage[]>([])
   const [categories, setCategories] = useState<GalleryCategory[]>([])
-  const [active,     setActive]     = useState('')
-  const [loading,    setLoading]    = useState(true)
+  const [active, setActive] = useState('')
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    gs.getCategories().then(res => setCategories(res.data.data)).catch(() => {})
+    gs.getCategories().then(res => setCategories(res.data.data)).catch(() => { })
   }, [])
 
   useEffect(() => {
     setLoading(true)
     galleryService.getAll(active || undefined)
       .then(res => setImages(res.data.data))
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoading(false))
   }, [active])
 
@@ -267,10 +267,10 @@ export function GalleryPage() {
                 style={{ minHeight: i === 0 ? '280px' : '0' }}>
                 {img.image_path
                   ? <img src={`/api/storage/uploads/${img.image_path}`} alt={img.title || ''}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                   : <div className="w-full h-full bg-gray-900 flex items-center justify-center">
-                      <svg className="w-8 h-8 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}><rect x="3" y="3" width="18" height="18" rx="1"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                    </div>
+                    <svg className="w-8 h-8 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}><rect x="3" y="3" width="18" height="18" rx="1" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" /></svg>
+                  </div>
                 }
                 <div className="absolute inset-0 bg-crimson-900/0 group-hover:bg-crimson-900/60 transition-all flex items-end">
                   <div className="p-3 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
@@ -289,10 +289,10 @@ export function GalleryPage() {
 
 // ─── Contact ─────────────────────────────────────────────────────
 export function ContactPage() {
-  const [form,    setForm]    = useState({ name:'', email:'', subject:'', message:'' })
+  const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' })
   const [loading, setLoading] = useState(false)
-  const [sent,    setSent]    = useState(false)
-  const [error,   setError]   = useState('')
+  const [sent, setSent] = useState(false)
+  const [error, setError] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -329,17 +329,17 @@ export function ContactPage() {
               {
                 label: 'Address',
                 val: 'School of Engineering\nMoi University, Eldoret, Kenya',
-                icon: <><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></>,
+                icon: <><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" /></>,
               },
               {
                 label: 'Email',
                 val: 'esamu@mu.ac.ke',
-                icon: <><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></>,
+                icon: <><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></>,
               },
               {
                 label: 'Hours',
                 val: 'Mon – Fri\n8:00 AM – 5:00 PM EAT',
-                icon: <><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>,
+                icon: <><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></>,
               },
             ].map(item => (
               <div key={item.label} className="flex gap-4">
@@ -359,7 +359,7 @@ export function ContactPage() {
             {sent ? (
               <div className="h-full flex flex-col items-center justify-center text-center gap-4">
                 <div className="w-14 h-14 bg-emerald-600 flex items-center justify-center">
-                  <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round"><polyline points="20 6 9 17 4 12" /></svg>
                 </div>
                 <h3 className="font-display text-xl font-bold text-gray-900">Message Sent!</h3>
                 <p className="text-sm text-gray-500">We'll get back to you within 24 hours.</p>
@@ -372,28 +372,28 @@ export function ContactPage() {
                     <div>
                       <label className="block font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-2">Name</label>
                       <input className="w-full border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:border-crimson-400 transition-colors"
-                        placeholder="Your name" value={form.name} onChange={e => setForm({...form, name: e.target.value})} required />
+                        placeholder="Your name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required />
                     </div>
                     <div>
                       <label className="block font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-2">Email</label>
                       <input className="w-full border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:border-crimson-400 transition-colors"
-                        type="email" placeholder="your@email.com" value={form.email} onChange={e => setForm({...form, email: e.target.value})} required />
+                        type="email" placeholder="your@email.com" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} required />
                     </div>
                   </div>
                   <div>
                     <label className="block font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-2">Subject</label>
                     <input className="w-full border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:border-crimson-400 transition-colors"
-                      placeholder="What is this about?" value={form.subject} onChange={e => setForm({...form, subject: e.target.value})} required />
+                      placeholder="What is this about?" value={form.subject} onChange={e => setForm({ ...form, subject: e.target.value })} required />
                   </div>
                   <div>
                     <label className="block font-mono text-[9px] uppercase tracking-widest text-gray-400 mb-2">Message</label>
                     <textarea className="w-full border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:border-crimson-400 transition-colors resize-none"
-                      rows={5} placeholder="Your message..." value={form.message} onChange={e => setForm({...form, message: e.target.value})} required />
+                      rows={5} placeholder="Your message..." value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} required />
                   </div>
                   {error && <p className="font-mono text-[10px] text-crimson-700 uppercase tracking-wider">{error}</p>}
                   <button type="submit" disabled={loading}
                     className="w-full bg-gray-950 text-white py-4 font-mono text-xs uppercase tracking-wider hover:bg-crimson-800 transition-colors disabled:opacity-60 flex items-center justify-center gap-2">
-                    {loading ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"/>Sending...</> : 'Send Message →'}
+                    {loading ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Sending...</> : 'Send Message →'}
                   </button>
                 </form>
               </>
