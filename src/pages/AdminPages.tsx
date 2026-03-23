@@ -428,12 +428,13 @@ function ExamsPanel() {
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+  // ✅ FIX: semester default changed from "S1" to "Sem1"
   const [form, setForm] = useState({
     title: "",
     type: "CAT",
     subject: "",
     year_of_study: "Y1",
-    semester: "S1",
+    semester: "Sem1",
   });
   const load = () => {
     examService
@@ -459,17 +460,15 @@ function ExamsPanel() {
         return;
       }
       fd.append("pdf", f);
-      // Some backends validate the upload under a generic key like `file`
-      // (safe to send both; server will read the expected one).
-      fd.append("file", f);
       await examService.create(fd);
       setModal(false);
+      // ✅ FIX: reset also uses "Sem1"
       setForm({
         title: "",
         type: "CAT",
         subject: "",
         year_of_study: "Y1",
-        semester: "S1",
+        semester: "Sem1",
       });
       if (fileRef.current) fileRef.current.value = "";
       setLoading(true);
@@ -491,6 +490,7 @@ function ExamsPanel() {
     CAT: "bg-amber-50 text-amber-800",
     Main: "bg-red-50 text-red-800",
     Assignment: "bg-green-50 text-green-800",
+    Supplementary: "bg-purple-50 text-purple-800",
   };
 
   return (
@@ -523,7 +523,8 @@ function ExamsPanel() {
                     setForm((p) => ({ ...p, type: e.target.value }))
                   }
                 >
-                  {["CAT", "Main", "Assignment"].map((t) => (
+                  {/* ✅ FIX: Added "Supplementary" to match backend */}
+                  {["CAT", "Main", "Assignment", "Supplementary"].map((t) => (
                     <option key={t} value={t}>
                       {t}
                     </option>
@@ -538,7 +539,8 @@ function ExamsPanel() {
                     setForm((p) => ({ ...p, semester: e.target.value }))
                   }
                 >
-                  {["Sem1", "Sem2", "Sem3"].map((s) => (
+                  {/* ✅ FIX: Removed "Sem3" — backend only accepts Sem1 and Sem2 */}
+                  {["Sem1", "Sem2"].map((s) => (
                     <option key={s} value={s}>
                       {s}
                     </option>
@@ -907,7 +909,6 @@ function BlogPanel() {
       Object.entries(form).forEach(([k, v]) => fd.append(k, v));
       const f = fileRef.current?.files?.[0];
       if (f) {
-        // Backend may validate under either key (common patterns).
         fd.append("image", f);
         fd.append("featured_image", f);
       }
@@ -1105,7 +1106,6 @@ function TeamPanel() {
         );
         return;
       }
-      // Backend expects `image` field; keep `profile_image` for frontend consistency.
       fd.append("image", f);
       fd.append("profile_image", f);
       await teamService.create(fd);
@@ -1306,7 +1306,6 @@ function OrdersPanel() {
         Orders & M-Pesa
       </p>
 
-      {/* Flow */}
       <div className="flex items-center gap-0 flex-wrap mb-6 p-4 bg-emerald-950 border border-emerald-900">
         {[
           "Add to cart",
@@ -1943,8 +1942,6 @@ function EventsPanel() {
     setErr("");
     try {
       const fd = new FormData();
-      // For PHP validators it's usually better to always send all keys,
-      // even if optional fields are empty strings.
       Object.entries(form).forEach(([k, v]) => fd.append(k, v));
       const f = fileRef.current?.files?.[0];
       if (f) {
@@ -2173,12 +2170,10 @@ function ProjectsPanel() {
   const approve = async (id: number) => {
     setActingId(id);
     setErr("");
-    // optimistic UI: mark approved immediately
     patchLocal(id, { status: "approved" });
     try {
       await adminProjectService.approve(id);
     } catch (e: unknown) {
-      // revert on failure
       patchLocal(id, { status: "pending" });
       setErr(apiErr(e, "Failed to approve project."));
     } finally {
@@ -2199,6 +2194,7 @@ function ProjectsPanel() {
       setActingId(null);
     }
   };
+
   const del = async (id: number) => {
     if (!confirm("Delete this project submission?")) return;
     await adminProjectService.delete(id).catch(() => {});
@@ -2217,10 +2213,6 @@ function ProjectsPanel() {
       {err && (
         <div className="mb-4 bg-red-50 border border-red-100 p-3">
           <p className="text-red-600 text-xs font-mono">{err}</p>
-          <p className="text-gray-500 text-xs font-mono mt-1">
-            If your backend doesn’t have `/admin/projects`, I can adjust this
-            panel to match your exact endpoints.
-          </p>
         </div>
       )}
 
@@ -2328,7 +2320,6 @@ function ProjectsPanel() {
   );
 }
 
-// ─── Main Admin Dashboard ─────────────────────────────────────────
 // ─── Partners Panel ──────────────────────────────────────────────
 function PartnersPanel() {
   const [partners, setPartners] = useState<
@@ -2698,7 +2689,6 @@ export function AdminDashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Topbar */}
       <header className="bg-crimson-800 h-14 flex items-center justify-between px-5 flex-shrink-0 border-b border-crimson-900">
         <div className="flex items-center gap-3">
           <button
@@ -2755,7 +2745,6 @@ export function AdminDashboardPage() {
       </header>
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
         <aside
           className={`${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 fixed md:static inset-y-0 left-0 z-40 w-52 bg-gray-900 flex flex-col transition-transform duration-200 pt-14 md:pt-0`}
         >
@@ -2803,7 +2792,6 @@ export function AdminDashboardPage() {
           />
         )}
 
-        {/* Content */}
         <main className="flex-1 overflow-y-auto p-6 md:p-8">
           {PANELS[active]}
         </main>
