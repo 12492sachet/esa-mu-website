@@ -286,13 +286,7 @@ function Field({
   );
 }
 
-function SaveBtn({
-  saving,
-  label,
-}: {
-  saving: boolean;
-  label: string;
-}) {
+function SaveBtn({ saving, label }: { saving: boolean; label: string }) {
   return (
     <button
       type="submit"
@@ -337,8 +331,16 @@ function DashboardPanel() {
     { label: "Products", key: "total_products", color: "border-l-amber-500" },
     { label: "Exams Uploaded", key: "total_exams", color: "border-l-blue-600" },
     { label: "Blog Posts", key: "total_posts", color: "border-l-emerald-600" },
-    { label: "Visitors (Total)", key: "total_visits", color: "border-l-fuchsia-600" },
-    { label: "Visitors (Today)", key: "visits_today", color: "border-l-sky-600" },
+    {
+      label: "Visitors (Total)",
+      key: "total_visits",
+      color: "border-l-fuchsia-600",
+    },
+    {
+      label: "Visitors (Today)",
+      key: "visits_today",
+      color: "border-l-sky-600",
+    },
   ];
 
   return (
@@ -536,7 +538,7 @@ function ExamsPanel() {
                     setForm((p) => ({ ...p, semester: e.target.value }))
                   }
                 >
-                  {["S1", "S2", "S3"].map((s) => (
+                  {["Sem1", "Sem2", "Sem3"].map((s) => (
                     <option key={s} value={s}>
                       {s}
                     </option>
@@ -2162,7 +2164,9 @@ function ProjectsPanel() {
 
   const patchLocal = (id: number, patch: Record<string, any>) => {
     setProjects((prev) =>
-      (prev as Record<string, any>[]).map((p) => (Number(p.id) === id ? { ...p, ...patch } : p)),
+      (prev as Record<string, any>[]).map((p) =>
+        Number(p.id) === id ? { ...p, ...patch } : p,
+      ),
     );
   };
 
@@ -2251,67 +2255,71 @@ function ProjectsPanel() {
                       ? "bg-red-50 hover:bg-red-100"
                       : "hover:bg-gray-50";
                 return (
-                <tr key={p.id} className={rowCls}>
-                  <Td>
-                    <div className="flex flex-col">
-                      <span className="font-medium">{p.title}</span>
-                      <span className="text-xs text-gray-400 line-clamp-1">
-                        {p.tech_stack || "—"}
-                      </span>
-                    </div>
-                  </Td>
-                  <Td>
-                    <div className="flex flex-col">
-                      <span className="text-sm">{p.student_name}</span>
-                      <span className="font-mono text-[10px] text-gray-400">
-                        {p.student_reg}
-                      </span>
-                    </div>
-                  </Td>
-                  <Td mono>{p.department ?? "—"}</Td>
-                  <Td mono>{p.year_of_study ?? "—"}</Td>
-                  <Td>
-                    <StatusBadge s={String(p.status ?? "pending")} />
-                  </Td>
-                  <Td>
-                    <div className="flex gap-2">
-                      {(s === "pending" || s === "draft") && (
-                        <>
-                          <button
-                            onClick={() => approve(Number(p.id))}
-                            disabled={actingId === Number(p.id)}
-                            className="font-mono text-[9px] uppercase tracking-wider px-3 py-1.5 border border-emerald-200 text-emerald-700 hover:bg-emerald-50 disabled:opacity-60 transition-colors"
-                          >
-                            {actingId === Number(p.id) ? "Working…" : "Approve"}
-                          </button>
-                          <button
-                            onClick={() => reject(Number(p.id))}
-                            disabled={actingId === Number(p.id)}
-                            className="font-mono text-[9px] uppercase tracking-wider px-3 py-1.5 border border-amber-200 text-amber-700 hover:bg-amber-50 disabled:opacity-60 transition-colors"
-                          >
-                            {actingId === Number(p.id) ? "Working…" : "Reject"}
-                          </button>
-                        </>
-                      )}
-                      {(s === "approved" || s === "published") && (
-                        <span className="font-mono text-[9px] uppercase tracking-wider px-3 py-1.5 border border-emerald-200 text-emerald-700 bg-emerald-50">
-                          Approved
+                  <tr key={p.id} className={rowCls}>
+                    <Td>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{p.title}</span>
+                        <span className="text-xs text-gray-400 line-clamp-1">
+                          {p.tech_stack || "—"}
                         </span>
-                      )}
-                      {s === "rejected" && (
-                        <span className="font-mono text-[9px] uppercase tracking-wider px-3 py-1.5 border border-red-200 text-red-700 bg-red-50">
-                          Rejected
+                      </div>
+                    </Td>
+                    <Td>
+                      <div className="flex flex-col">
+                        <span className="text-sm">{p.student_name}</span>
+                        <span className="font-mono text-[10px] text-gray-400">
+                          {p.student_reg}
                         </span>
-                      )}
-                      <button
-                        onClick={() => del(Number(p.id))}
-                        className="font-mono text-[9px] uppercase tracking-wider px-3 py-1.5 border border-red-200 text-red-600 hover:bg-red-50 transition-colors"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </Td>
-                </tr>
+                      </div>
+                    </Td>
+                    <Td mono>{p.department ?? "—"}</Td>
+                    <Td mono>{p.year_of_study ?? "—"}</Td>
+                    <Td>
+                      <StatusBadge s={String(p.status ?? "pending")} />
+                    </Td>
+                    <Td>
+                      <div className="flex gap-2">
+                        {(s === "pending" || s === "draft") && (
+                          <>
+                            <button
+                              onClick={() => approve(Number(p.id))}
+                              disabled={actingId === Number(p.id)}
+                              className="font-mono text-[9px] uppercase tracking-wider px-3 py-1.5 border border-emerald-200 text-emerald-700 hover:bg-emerald-50 disabled:opacity-60 transition-colors"
+                            >
+                              {actingId === Number(p.id)
+                                ? "Working…"
+                                : "Approve"}
+                            </button>
+                            <button
+                              onClick={() => reject(Number(p.id))}
+                              disabled={actingId === Number(p.id)}
+                              className="font-mono text-[9px] uppercase tracking-wider px-3 py-1.5 border border-amber-200 text-amber-700 hover:bg-amber-50 disabled:opacity-60 transition-colors"
+                            >
+                              {actingId === Number(p.id)
+                                ? "Working…"
+                                : "Reject"}
+                            </button>
+                          </>
+                        )}
+                        {(s === "approved" || s === "published") && (
+                          <span className="font-mono text-[9px] uppercase tracking-wider px-3 py-1.5 border border-emerald-200 text-emerald-700 bg-emerald-50">
+                            Approved
+                          </span>
+                        )}
+                        {s === "rejected" && (
+                          <span className="font-mono text-[9px] uppercase tracking-wider px-3 py-1.5 border border-red-200 text-red-700 bg-red-50">
+                            Rejected
+                          </span>
+                        )}
+                        <button
+                          onClick={() => del(Number(p.id))}
+                          className="font-mono text-[9px] uppercase tracking-wider px-3 py-1.5 border border-red-200 text-red-600 hover:bg-red-50 transition-colors"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </Td>
+                  </tr>
                 );
               })}
         </tbody>
